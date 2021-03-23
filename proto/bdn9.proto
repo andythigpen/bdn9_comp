@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+option go_package = "github.com/andythigpen/bdn9_comp/v2/proto";
+
+service BDN9Service {
+  rpc SetRGBMode(SetRGBModeRequest) returns (SetRGBModeReply) {}
+  rpc SetMatrixHSV(SetMatrixHSVRequest) returns (SetMatrixHSVReply) {}
+  rpc ToggleMatrix(ToggleMatrixRequest) returns (ToggleMatrixReply) {}
+  rpc SetIndicatorHSV(SetIndicatorHSVRequest) returns (SetIndicatorHSVReply) {}
+  rpc ToggleIndicator(ToggleIndicatorRequest) returns (ToggleIndicatorReply) {}
+  rpc EnableIndicator(EnableIndicatorRequest) returns (EnableIndicatorReply) {}
+  rpc DisableIndicator(DisableIndicatorRequest) returns (DisableIndicatorReply) {}
+  rpc ActivateLayer(ActivateLayerRequest) returns (ActivateLayerReply) {}
+  rpc SetSpeed(SetSpeedRequest) returns (SetSpeedReply) {}
+  rpc SetMuteStatus(SetMuteStatusRequest) returns (SetMuteStatusReply) {}
+  rpc EndCall(EndCallRequest) returns (EndCallReply) {}
+  rpc Reset(ResetRequest) returns (ResetReply) {}
+}
+
+message SetRGBModeRequest {
+    uint32 mode = 1;
+    bool persist = 2;
+}
+message SetRGBModeReply {}
+message SetMatrixHSVRequest {
+    uint32 h = 1;
+    uint32 s = 2;
+    uint32 v = 3;
+    bool persist = 4;
+}
+message SetMatrixHSVReply {}
+message ToggleMatrixRequest {
+    bool persist = 1;
+}
+message ToggleMatrixReply {}
+message SetIndicatorHSVRequest {
+    uint32 h = 1;
+    uint32 s = 2;
+    uint32 v = 3;
+    uint32 key = 4;
+    bool persist = 5;
+}
+message SetIndicatorHSVReply {}
+message ToggleIndicatorRequest {
+    uint32 key = 1;
+}
+message ToggleIndicatorReply {}
+message EnableIndicatorRequest {
+    uint32 key = 1;
+}
+message EnableIndicatorReply {}
+message DisableIndicatorRequest {
+    uint32 key = 1;
+}
+message DisableIndicatorReply {}
+message ActivateLayerRequest {
+    uint32 layer = 1;
+}
+message ActivateLayerReply {}
+message SetSpeedRequest {
+    uint32 speed = 1;
+    bool persist = 2;
+}
+message SetSpeedReply {}
+message SetMuteStatusRequest {
+    bool muted = 1;
+}
+message SetMuteStatusReply {}
+message EndCallRequest {}
+message EndCallReply {}
+message ResetRequest {}
+message ResetReply {}

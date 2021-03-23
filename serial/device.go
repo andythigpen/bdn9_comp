@@ -72,6 +72,9 @@ func (d *bdn9SerialDevice) SetRGBMode(mode RGBMode) error {
 	if d.port == nil {
 		return NotOpenErr
 	}
+	if err := mode.IsValid(); err != nil {
+		return err
+	}
 	pkt := NewPacket(COMMAND_SET_MODE, d.persist, byte(mode))
 	return d.writeAll(pkt)
 }
@@ -127,6 +130,9 @@ func (d *bdn9SerialDevice) DisableIndicator(index uint8) error {
 func (d *bdn9SerialDevice) ActivateLayer(layer Layer) error {
 	if d.port == nil {
 		return NotOpenErr
+	}
+	if err := layer.IsValid(); err != nil {
+		return err
 	}
 	pkt := NewPacket(COMMAND_ACTIVATE_LAYER, byte(layer))
 	return d.writeAll(pkt)

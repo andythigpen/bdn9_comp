@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"context"
+
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/spf13/cobra"
 )
 
@@ -9,7 +12,8 @@ var modeToggleCmd = &cobra.Command{
 	Use:   "toggle",
 	Short: "Toggles the RGB matrix",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return device.ToggleMatrix()
+		_, err := client.ToggleMatrix(context.Background(), &pb.ToggleMatrixRequest{})
+		return err
 	},
 }
 

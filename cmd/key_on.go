@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"context"
+
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/spf13/cobra"
 )
 
@@ -9,7 +12,8 @@ var keyOnCmd = &cobra.Command{
 	Use:   "on",
 	Short: "Enable indicator for specific key",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return device.EnableIndicator(key)
+		_, err := client.EnableIndicator(context.Background(), &pb.EnableIndicatorRequest{Key: uint32(key)})
+		return err
 	},
 }
 

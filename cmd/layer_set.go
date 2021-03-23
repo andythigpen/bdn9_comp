@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"strconv"
 
-	"github.com/andythigpen/bdn9_comp/v2/serial"
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/spf13/cobra"
 )
 
@@ -17,11 +18,8 @@ var layerSetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		layer := serial.Layer(l)
-		if err := layer.IsValid(); err != nil {
-			return err
-		}
-		return device.ActivateLayer(layer)
+		_, err = client.ActivateLayer(context.Background(), &pb.ActivateLayerRequest{Layer: uint32(l)})
+		return err
 	},
 }
 

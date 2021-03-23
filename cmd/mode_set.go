@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"strconv"
 
-	"github.com/andythigpen/bdn9_comp/v2/serial"
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +21,8 @@ var modeSetCmd = &cobra.Command{
 		if m, err = strconv.ParseUint(args[0], 10, 8); err != nil {
 			return err
 		}
-		return device.SetRGBMode(serial.RGBMode(m))
+		_, err = client.SetRGBMode(context.Background(), &pb.SetRGBModeRequest{Mode: uint32(m)})
+		return err
 	},
 }
 

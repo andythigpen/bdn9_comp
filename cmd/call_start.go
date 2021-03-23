@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"context"
+
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/andythigpen/bdn9_comp/v2/serial"
 	"github.com/spf13/cobra"
 )
@@ -12,17 +15,22 @@ var callStartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Starts a call mode",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var layer uint32
+		var muted bool
 		if teams {
-			if err := device.ActivateLayer(serial.LAYER_TEAMS); err != nil {
-				return err
-			}
-			return device.SetMuteStatus(true) // teams starts muted
+			layer = serial.LAYER_TEAMS
+			muted = true // teams starts muted
 		} else {
-			if err := device.ActivateLayer(serial.LAYER_SLACK); err != nil {
-				return err
-			}
-			return device.SetMuteStatus(false) // slack starts unmuted
+			layer = serial.LAYER_SLACK
+			muted = false // slack does not start muted
 		}
+		req := &pb.ActivateLayerRequest{Layer: layer}
+		_, err := client.ActivateLayer(context.Background(), req)
+		if err != nil {
+			return err
+		}
+		_, err = client.SetMuteStatus(context.Background(), &pb.SetMuteStatusRequest{Muted: muted})
+		return err
 	},
 }
 

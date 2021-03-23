@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"strconv"
 
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +21,8 @@ var speedSetCmd = &cobra.Command{
 		if s, err = strconv.ParseUint(args[0], 10, 8); err != nil {
 			return err
 		}
-		return device.SetSpeed(uint8(s))
+		_, err = client.SetSpeed(context.Background(), &pb.SetSpeedRequest{Speed: uint32(s)})
+		return err
 	},
 }
 

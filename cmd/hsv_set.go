@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"context"
+
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +17,8 @@ var hsvSetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return device.SetMatrixHSV(uint8(h), uint8(s), uint8(v))
+		_, err = client.SetMatrixHSV(context.Background(), &pb.SetMatrixHSVRequest{H: uint32(h), S: uint32(s), V: uint32(v)})
+		return err
 	},
 }
 

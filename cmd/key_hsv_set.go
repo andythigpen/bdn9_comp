@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"context"
+
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +19,13 @@ var keyHsvSetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return device.SetIndicatorHSV(key, uint8(h), uint8(s), uint8(v))
+		_, err = client.SetIndicatorHSV(context.Background(), &pb.SetIndicatorHSVRequest{
+			Key: uint32(key),
+			H:   uint32(h),
+			S:   uint32(s),
+			V:   uint32(v),
+		})
+		return err
 	},
 }
 

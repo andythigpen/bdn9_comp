@@ -2,18 +2,23 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/andythigpen/bdn9_comp/v2/serial"
 )
 
 var (
 	cfgFile string
 	device  serial.BDN9SerialDevice
+	conn    *grpc.ClientConn
+	client  pb.BDN9ServiceClient
 	persist bool
 )
 
@@ -36,6 +41,9 @@ func Execute() {
 
 	if device != nil && device.IsOpen() {
 		device.Close()
+	}
+	if conn != nil {
+		conn.Close()
 	}
 }
 
@@ -73,8 +81,28 @@ func initConfig() {
 }
 
 func openDevice() {
+	port := viper.GetString("port")
+	if len(port) == 0 {
+		openGrpc()
+	} else {
+		openSerialDevice()
+	}
+}
+
+func openGrpc() {
+	var opts []grpc.DialOption
+	var err error
+	conn, err = grpc.Dial(viper.GetString("server"), opts...)
+	if err != nil {
+		panic(err)
+	}
+	client = pb.NewBDN9ServiceClient(conn)
+}
+
+func openSerialDevice() {
+	port := viper.GetString("port")
 	device = serial.NewDevice()
-	if err := device.Open(viper.GetString("port")); err != nil {
+	if err := device.Open(port); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -82,4 +110,6 @@ func openDevice() {
 	if persist {
 		device.EnablePersist()
 	}
+
+	client = serial.NewSerialClient(device)
 }
