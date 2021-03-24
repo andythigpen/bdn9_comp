@@ -3,7 +3,7 @@ module github.com/andythigpen/bdn9_comp/v2
 go 1.16
 
 require (
-	github.com/mitchellh/go-homedir v1.1.0
+	github.com/adrg/xdg v0.3.2
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
 	go.bug.st/serial v1.1.3

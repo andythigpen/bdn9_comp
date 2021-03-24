@@ -12,12 +12,16 @@ var keyOffCmd = &cobra.Command{
 	Use:   "off",
 	Short: "Disable indicator for specific key",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := client.DisableIndicator(context.Background(), &pb.DisableIndicatorRequest{Key: uint32(key)})
+		_, err := client.DisableIndicator(context.Background(), &pb.DisableIndicatorRequest{
+			Key:   uint32(key),
+			Layer: uint32(layer),
+		})
 		return err
 	},
 }
 
 func init() {
 	keyOffCmd.Flags().Uint8VarP(&key, "key", "k", 0, "Key index (max 11)")
+	keyOffCmd.Flags().Uint8VarP(&layer, "layer", "l", 0, "Layer (max 2)")
 	keyCmd.AddCommand(keyOffCmd)
 }

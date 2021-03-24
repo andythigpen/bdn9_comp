@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/adrg/xdg"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
-
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc"
 
 	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/andythigpen/bdn9_comp/v2/serial"
@@ -50,7 +49,9 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig, openDevice)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.bdn9.yaml)")
+	path, _ := xdg.ConfigFile("bdn9")
+
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default: %s/config.yaml)", path))
 	rootCmd.PersistentFlags().BoolVarP(&persist, "persist", "p", false, "Write changes to EEPROM")
 }
 
@@ -61,15 +62,14 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		// Find home directory.
-		home, err := homedir.Dir()
+		path, err := xdg.ConfigFile("bdn9")
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		// Search config in home directory with name ".bdn9" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".bdn9")
+		viper.AddConfigPath(path)
+		viper.SetConfigName("config")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -91,8 +91,8 @@ func openDevice() {
 }
 
 func openGrpc() {
-	var opts []grpc.DialOption
 	var err error
+	opts := []grpc.DialOption{grpc.WithInsecure()}
 	conn, err = grpc.Dial(viper.GetString("server"), opts...)
 	if err != nil {
 		panic(err)
