@@ -15,10 +15,10 @@ type BDN9SerialDevice interface {
 	SetRGBMode(mode RGBMode) error
 	SetMatrixHSV(h uint8, s uint8, v uint8) error
 	ToggleMatrix() error
-	SetIndicatorHSV(index uint8, h uint8, s uint8, v uint8) error
-	ToggleIndicator(index uint8) error
-	EnableIndicator(index uint8) error
-	DisableIndicator(index uint8) error
+	SetIndicatorHSV(layer Layer, index uint8, h uint8, s uint8, v uint8) error
+	ToggleIndicator(layer Layer, index uint8) error
+	EnableIndicator(layer Layer, index uint8) error
+	DisableIndicator(layer Layer, index uint8) error
 	ActivateLayer(layer Layer) error
 	SetSpeed(speed uint8) error
 	SetMuteStatus(muted bool) error
@@ -95,35 +95,47 @@ func (d *bdn9SerialDevice) ToggleMatrix() error {
 	return d.writeAll(pkt)
 }
 
-func (d *bdn9SerialDevice) SetIndicatorHSV(index uint8, h uint8, s uint8, v uint8) error {
+func (d *bdn9SerialDevice) SetIndicatorHSV(layer Layer, index uint8, h uint8, s uint8, v uint8) error {
 	if d.port == nil {
 		return NotOpenErr
 	}
-	pkt := NewPacket(COMMAND_SET_INDICATOR_HSV, index, h, s, v)
+	if err := layer.IsValid(); err != nil {
+		return err
+	}
+	pkt := NewPacket(COMMAND_SET_INDICATOR_HSV, byte(layer), index, h, s, v)
 	return d.writeAll(pkt)
 }
 
-func (d *bdn9SerialDevice) ToggleIndicator(index uint8) error {
+func (d *bdn9SerialDevice) ToggleIndicator(layer Layer, index uint8) error {
 	if d.port == nil {
 		return NotOpenErr
 	}
-	pkt := NewPacket(COMMAND_TOGGLE_INDICATOR, index)
+	if err := layer.IsValid(); err != nil {
+		return err
+	}
+	pkt := NewPacket(COMMAND_TOGGLE_INDICATOR, byte(layer), index)
 	return d.writeAll(pkt)
 }
 
-func (d *bdn9SerialDevice) EnableIndicator(index uint8) error {
+func (d *bdn9SerialDevice) EnableIndicator(layer Layer, index uint8) error {
 	if d.port == nil {
 		return NotOpenErr
 	}
-	pkt := NewPacket(COMMAND_ENABLE_INDICATOR, index)
+	if err := layer.IsValid(); err != nil {
+		return err
+	}
+	pkt := NewPacket(COMMAND_ENABLE_INDICATOR, byte(layer), index)
 	return d.writeAll(pkt)
 }
 
-func (d *bdn9SerialDevice) DisableIndicator(index uint8) error {
+func (d *bdn9SerialDevice) DisableIndicator(layer Layer, index uint8) error {
 	if d.port == nil {
 		return NotOpenErr
 	}
-	pkt := NewPacket(COMMAND_DISABLE_INDICATOR, index)
+	if err := layer.IsValid(); err != nil {
+		return err
+	}
+	pkt := NewPacket(COMMAND_DISABLE_INDICATOR, byte(layer), index)
 	return d.writeAll(pkt)
 }
 

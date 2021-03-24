@@ -39,18 +39,22 @@ message SetIndicatorHSVRequest {
     uint32 v = 3;
     uint32 key = 4;
     bool persist = 5;
+    uint32 layer = 6;
 }
 message SetIndicatorHSVReply {}
 message ToggleIndicatorRequest {
     uint32 key = 1;
+    uint32 layer = 2;
 }
 message ToggleIndicatorReply {}
 message EnableIndicatorRequest {
     uint32 key = 1;
+    uint32 layer = 2;
 }
 message EnableIndicatorReply {}
 message DisableIndicatorRequest {
     uint32 key = 1;
+    uint32 layer = 2;
 }
 message DisableIndicatorReply {}
 message ActivateLayerRequest {

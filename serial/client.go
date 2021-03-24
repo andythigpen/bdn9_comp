@@ -29,19 +29,19 @@ func (c *bdn9SerialClient) ToggleMatrix(ctx context.Context, in *pb.ToggleMatrix
 }
 
 func (c *bdn9SerialClient) SetIndicatorHSV(ctx context.Context, in *pb.SetIndicatorHSVRequest, opts ...grpc.CallOption) (*pb.SetIndicatorHSVReply, error) {
-	return nil, c.device.SetIndicatorHSV(uint8(in.Key), uint8(in.H), uint8(in.S), uint8(in.V))
+	return nil, c.device.SetIndicatorHSV(Layer(in.Layer), uint8(in.Key), uint8(in.H), uint8(in.S), uint8(in.V))
 }
 
 func (c *bdn9SerialClient) ToggleIndicator(ctx context.Context, in *pb.ToggleIndicatorRequest, opts ...grpc.CallOption) (*pb.ToggleIndicatorReply, error) {
-	return nil, c.device.ToggleIndicator(uint8(in.Key))
+	return nil, c.device.ToggleIndicator(Layer(in.Layer), uint8(in.Key))
 }
 
 func (c *bdn9SerialClient) EnableIndicator(ctx context.Context, in *pb.EnableIndicatorRequest, opts ...grpc.CallOption) (*pb.EnableIndicatorReply, error) {
-	return nil, c.device.EnableIndicator(uint8(in.Key))
+	return nil, c.device.EnableIndicator(Layer(in.Layer), uint8(in.Key))
 }
 
 func (c *bdn9SerialClient) DisableIndicator(ctx context.Context, in *pb.DisableIndicatorRequest, opts ...grpc.CallOption) (*pb.DisableIndicatorReply, error) {
-	return nil, c.device.DisableIndicator(uint8(in.Key))
+	return nil, c.device.DisableIndicator(Layer(in.Layer), uint8(in.Key))
 }
 
 func (c *bdn9SerialClient) ActivateLayer(ctx context.Context, in *pb.ActivateLayerRequest, opts ...grpc.CallOption) (*pb.ActivateLayerReply, error) {

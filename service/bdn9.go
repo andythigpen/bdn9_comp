@@ -41,28 +41,28 @@ func (s *bdn9Service) ToggleMatrix(ctx context.Context, request *pb.ToggleMatrix
 }
 
 func (s *bdn9Service) SetIndicatorHSV(ctx context.Context, request *pb.SetIndicatorHSVRequest) (*pb.SetIndicatorHSVReply, error) {
-	if err := s.device.SetIndicatorHSV(uint8(request.Key), uint8(request.H), uint8(request.S), uint8(request.V)); err != nil {
+	if err := s.device.SetIndicatorHSV(serial.Layer(request.Layer), uint8(request.Key), uint8(request.H), uint8(request.S), uint8(request.V)); err != nil {
 		return nil, err
 	}
 	return &pb.SetIndicatorHSVReply{}, nil
 }
 
 func (s *bdn9Service) ToggleIndicator(ctx context.Context, request *pb.ToggleIndicatorRequest) (*pb.ToggleIndicatorReply, error) {
-	if err := s.device.ToggleIndicator(uint8(request.Key)); err != nil {
+	if err := s.device.ToggleIndicator(serial.Layer(request.Layer), uint8(request.Key)); err != nil {
 		return nil, err
 	}
 	return &pb.ToggleIndicatorReply{}, nil
 }
 
 func (s *bdn9Service) EnableIndicator(ctx context.Context, request *pb.EnableIndicatorRequest) (*pb.EnableIndicatorReply, error) {
-	if err := s.device.EnableIndicator(uint8(request.Key)); err != nil {
+	if err := s.device.EnableIndicator(serial.Layer(request.Layer), uint8(request.Key)); err != nil {
 		return nil, err
 	}
 	return &pb.EnableIndicatorReply{}, nil
 }
 
 func (s *bdn9Service) DisableIndicator(ctx context.Context, request *pb.DisableIndicatorRequest) (*pb.DisableIndicatorReply, error) {
-	if err := s.device.DisableIndicator(uint8(request.Key)); err != nil {
+	if err := s.device.DisableIndicator(serial.Layer(request.Layer), uint8(request.Key)); err != nil {
 		return nil, err
 	}
 	return &pb.DisableIndicatorReply{}, nil
