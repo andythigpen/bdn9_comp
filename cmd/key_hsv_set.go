@@ -9,6 +9,7 @@ import (
 
 var key uint8
 var layer uint8
+var turnOn bool
 
 // keyHsvSetCmd represents the hsv set command for individual keys
 var keyHsvSetCmd = &cobra.Command{
@@ -27,12 +28,23 @@ var keyHsvSetCmd = &cobra.Command{
 			V:     uint32(v),
 			Layer: uint32(layer),
 		})
-		return err
+		if err != nil {
+			return err
+		}
+		if turnOn {
+			_, err = client.EnableIndicator(context.Background(), &pb.EnableIndicatorRequest{
+				Key:   uint32(key),
+				Layer: uint32(layer),
+			})
+			return err
+		}
+		return nil
 	},
 }
 
 func init() {
 	keyHsvSetCmd.Flags().Uint8VarP(&key, "key", "k", 0, "Key index (max 11)")
 	keyHsvSetCmd.Flags().Uint8VarP(&layer, "layer", "l", 0, "Layer (max 2)")
+	keyHsvSetCmd.Flags().BoolVar(&turnOn, "on", false, "Also turn the key on")
 	keyCmd.AddCommand(keyHsvSetCmd)
 }
