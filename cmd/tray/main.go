@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/andythigpen/bdn9_comp/v2/cmd"
+	"github.com/andythigpen/bdn9_comp/v2/cmd/tray/icon"
 	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/andythigpen/bdn9_comp/v2/serial"
 	"github.com/andythigpen/bdn9_comp/v2/service"
@@ -39,8 +40,8 @@ func connectSerialDevice() error {
 
 func onReady() {
 	cmd.InitConfig()
-	systray.SetTitle("BDN9")
 	systray.SetTooltip("Keyboard daemon")
+	systray.SetTemplateIcon(icon.Data, icon.Data)
 
 	mSerial := systray.AddMenuItem("Serial: initializing", "initializing")
 	mServer := systray.AddMenuItem("Server: initializing", "initializing")

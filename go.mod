@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/adrg/xdg v0.3.2
+	github.com/cratonica/2goarray v0.0.0-20190331194516-514510793eaa // indirect
 	github.com/getlantern/systray v1.1.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
