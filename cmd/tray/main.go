@@ -15,6 +15,8 @@ import (
 
 var listening = false
 var device serial.BDN9SerialDevice
+var grpcServer *grpc.Server
+var listener net.Listener
 
 func main() {
 	onExit := func() {
@@ -26,27 +28,12 @@ func main() {
 	systray.Run(onReady, onExit)
 }
 
-func startServer() error {
-	bindAddress := viper.GetString("bind")
-	if len(bindAddress) == 0 {
-		bindAddress = "localhost:17432"
-	}
-	lis, err := net.Listen("tcp", bindAddress)
-	if err != nil {
-		return err
-	}
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
+func connectSerialDevice() error {
+	var err error
 	device, err = cmd.OpenSerialDevice()
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to open serial device: %s", err)
 	}
-	server := service.NewService(device)
-	pb.RegisterBDN9ServiceServer(grpcServer, server)
-	if err := grpcServer.Serve(lis); err != nil {
-		return err
-	}
-	listening = true
 	return nil
 }
 
@@ -54,15 +41,49 @@ func onReady() {
 	cmd.InitConfig()
 	systray.SetTitle("BDN9")
 	systray.SetTooltip("Keyboard daemon")
+
+	mSerial := systray.AddMenuItem("Serial: initializing", "initializing")
+	mServer := systray.AddMenuItem("Server: initializing", "initializing")
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the app")
 
-	mStatus := systray.AddMenuItem("Status: initializing", "initializing")
+	bindAddress := viper.GetString("bind")
+	if len(bindAddress) == 0 {
+		bindAddress = "localhost:17432"
+	}
 
-	listen := func() {
-		if err := startServer(); err != nil {
-			mStatus.SetTitle(fmt.Sprintf("Error: %s", err))
+	initServer := func() {
+		var err error
+		if grpcServer != nil {
+			grpcServer.Stop()
+		}
+		listener, err = net.Listen("tcp", bindAddress)
+		if err != nil {
+			mServer.SetTitle(fmt.Sprintf("Failed to bind: %s", err))
+			return
+		}
+		var opts []grpc.ServerOption
+		grpcServer = grpc.NewServer(opts...)
+		server := service.NewService(device)
+		pb.RegisterBDN9ServiceServer(grpcServer, server)
+		mServer.SetTitle(fmt.Sprintf("Server: listening on %s", bindAddress))
+		mServer.SetTooltip("listening")
+		// this is a blocking call
+		if err := grpcServer.Serve(listener); err != nil {
+			mServer.SetTitle(fmt.Sprintf("Failed to serve: %s", err))
+			return
+		}
+	}
+
+	initSerial := func() {
+		if device != nil && device.IsOpen() {
+			device.Close()
+		}
+		if err := connectSerialDevice(); err != nil {
+			mSerial.SetTitle(fmt.Sprintf("Error: %s", err))
 		} else {
-			mStatus.SetTitle("Status: running")
+			mSerial.SetTitle(fmt.Sprintf("Serial: connected to %s", device.Name()))
+			mSerial.SetTooltip("connected")
+			initServer()
 		}
 	}
 
@@ -72,13 +93,13 @@ func onReady() {
 			case <-mQuitOrig.ClickedCh:
 				systray.Quit()
 				return
-			case <-mStatus.ClickedCh:
-				if !listening {
-					listen()
-				}
+			case <-mSerial.ClickedCh:
+				initSerial()
+			case <-mServer.ClickedCh:
+				initServer()
 			}
 		}
 	}()
 
-	go listen()
+	go initSerial()
 }

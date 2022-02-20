@@ -4,14 +4,17 @@ import (
 	"fmt"
 
 	"go.bug.st/serial"
+	"go.bug.st/serial/enumerator"
 )
 
 var NotOpenErr = fmt.Errorf("Device not open")
+var DeviceNotFound = fmt.Errorf("No BDN9 device found")
 
 type BDN9SerialDevice interface {
 	Open(port string) error
 	IsOpen() bool
 	Close() error
+	Name() string
 	SetRGBMode(mode RGBMode) error
 	SetMatrixHSV(h uint8, s uint8, v uint8) error
 	ToggleMatrix() error
@@ -31,7 +34,13 @@ type BDN9SerialDevice interface {
 type bdn9SerialDevice struct {
 	port    serial.Port
 	persist byte
+	name    string
 }
+
+const (
+	VID = "cb10"
+	PID = "2133"
+)
 
 func boolToByte(b bool) byte {
 	if b {
@@ -41,7 +50,27 @@ func boolToByte(b bool) byte {
 }
 
 func NewDevice() BDN9SerialDevice {
-	return &bdn9SerialDevice{port: nil, persist: 0}
+	return &bdn9SerialDevice{port: nil, persist: 0, name: ""}
+}
+
+func FindPort() (string, error) {
+	ports, err := enumerator.GetDetailedPortsList()
+	if err != nil {
+		return "", err
+	}
+	for _, port := range ports {
+		if !port.IsUSB {
+			continue
+		}
+		if port.VID == VID && port.PID == PID {
+			return port.Name, nil
+		}
+	}
+	return "", DeviceNotFound
+}
+
+func GetDevices() ([]string, error) {
+	return serial.GetPortsList()
 }
 
 func (d *bdn9SerialDevice) Open(port string) (err error) {
@@ -49,6 +78,7 @@ func (d *bdn9SerialDevice) Open(port string) (err error) {
 		BaudRate: 9600, // TODO: configurable
 	}
 	d.port, err = serial.Open(port, mode)
+	d.name = port
 	return
 }
 
@@ -58,6 +88,10 @@ func (d *bdn9SerialDevice) IsOpen() bool {
 
 func (d *bdn9SerialDevice) Close() error {
 	return d.port.Close()
+}
+
+func (d *bdn9SerialDevice) Name() string {
+	return d.name
 }
 
 func (d *bdn9SerialDevice) EnablePersist() {

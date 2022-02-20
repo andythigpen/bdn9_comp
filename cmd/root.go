@@ -82,8 +82,8 @@ func InitConfig() {
 }
 
 func OpenDevice() {
-	port := viper.GetString("port")
-	if len(port) == 0 {
+	server := viper.GetString("server")
+	if len(server) != 0 {
 		openGrpc()
 	} else {
 		if _, err := OpenSerialDevice(); err != nil {
@@ -104,7 +104,14 @@ func openGrpc() {
 }
 
 func OpenSerialDevice() (serial.BDN9SerialDevice, error) {
+	var err error
 	port := viper.GetString("port")
+	if len(port) == 0 {
+		port, err = serial.FindPort()
+		if err != nil {
+			return nil, err
+		}
+	}
 	device = serial.NewDevice()
 	if err := device.Open(port); err != nil {
 		return nil, err
