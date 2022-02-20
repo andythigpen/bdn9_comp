@@ -18,6 +18,13 @@ var listening = false
 var device serial.BDN9SerialDevice
 var grpcServer *grpc.Server
 var listener net.Listener
+var handler serialHandler
+
+type serialHandler struct{}
+
+func (h serialHandler) HandleEvent(d serial.BDN9SerialDevice, ev serial.Event) {
+	fmt.Printf("ev: %v\n", ev)
+}
 
 func main() {
 	onExit := func() {
@@ -31,7 +38,8 @@ func main() {
 
 func connectSerialDevice() error {
 	var err error
-	device, err = cmd.OpenSerialDevice()
+	handler = serialHandler{}
+	device, err = cmd.OpenSerialDevice(handler)
 	if err != nil {
 		return fmt.Errorf("Failed to open serial device: %s", err)
 	}

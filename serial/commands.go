@@ -16,6 +16,7 @@ const (
 	COMMAND_SET_SPEED                // sets the animation speed
 	COMMAND_SET_MUTE_STATUS          // sets the mute status
 	COMMAND_END_CALL                 // clears call status and goes back to default layer
+	COMMAND_ECHO                     // test command, just echos back what you send
 	COMMAND_MAX                      // not a valid command
 )
 

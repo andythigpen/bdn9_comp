@@ -63,3 +63,7 @@ func (c *bdn9SerialClient) EndCall(ctx context.Context, in *pb.EndCallRequest, o
 func (c *bdn9SerialClient) Reset(ctx context.Context, in *pb.ResetRequest, opts ...grpc.CallOption) (*pb.ResetReply, error) {
 	return nil, c.device.Reset()
 }
+
+func (c *bdn9SerialClient) Echo(ctx context.Context, in *pb.EchoRequest, opts ...grpc.CallOption) (*pb.EchoReply, error) {
+	return nil, c.device.Echo([]byte{0x1, 0x2, 0x3})
+}

@@ -102,3 +102,10 @@ func (s *bdn9Service) Reset(ctx context.Context, request *pb.ResetRequest) (*pb.
 	}
 	return &pb.ResetReply{}, nil
 }
+
+func (s *bdn9Service) Echo(ctx context.Context, request *pb.EchoRequest) (*pb.EchoReply, error) {
+	if err := s.device.Echo([]byte{0x1, 0x2, 0x3}); err != nil {
+		return nil, err
+	}
+	return &pb.EchoReply{}, nil
+}

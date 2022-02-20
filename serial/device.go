@@ -2,6 +2,7 @@ package serial
 
 import (
 	"fmt"
+	"time"
 
 	"go.bug.st/serial"
 	"go.bug.st/serial/enumerator"
@@ -27,6 +28,7 @@ type BDN9SerialDevice interface {
 	SetMuteStatus(muted bool) error
 	EndCall() error
 	Reset() error
+	Echo(b []byte) error
 	EnablePersist()
 	DisablePersist()
 }
@@ -35,6 +37,7 @@ type bdn9SerialDevice struct {
 	port    serial.Port
 	persist byte
 	name    string
+	handler EventHandler
 }
 
 const (
@@ -49,8 +52,8 @@ func boolToByte(b bool) byte {
 	return 0
 }
 
-func NewDevice() BDN9SerialDevice {
-	return &bdn9SerialDevice{port: nil, persist: 0, name: ""}
+func NewDevice(handler EventHandler) BDN9SerialDevice {
+	return &bdn9SerialDevice{port: nil, persist: 0, name: "", handler: handler}
 }
 
 func FindPort() (string, error) {
@@ -73,11 +76,40 @@ func GetDevices() ([]string, error) {
 	return serial.GetPortsList()
 }
 
+func handleEvents(d *bdn9SerialDevice) {
+	buf := make([]byte, 16)
+	for {
+		// blocks until bytes are read
+		sz, err := d.port.Read(buf)
+		if err != nil {
+			fmt.Printf("Error reading: %s\n", err)
+			d.port.Close()
+			d.port = nil
+			return
+		}
+		if sz == 0 {
+			fmt.Println("No bytes read")
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+
+		if d.handler != nil {
+			for i := 0; i < sz; i++ {
+				d.handler.HandleEvent(d, Event(buf[i]))
+			}
+		}
+		// fmt.Printf("cmd: %v\n", buf)
+	}
+}
+
 func (d *bdn9SerialDevice) Open(port string) (err error) {
 	mode := &serial.Mode{
 		BaudRate: 9600, // TODO: configurable
 	}
 	d.port, err = serial.Open(port, mode)
+	if err == nil && d.handler != nil {
+		go handleEvents(d)
+	}
 	d.name = port
 	return
 }
@@ -87,7 +119,9 @@ func (d *bdn9SerialDevice) IsOpen() bool {
 }
 
 func (d *bdn9SerialDevice) Close() error {
-	return d.port.Close()
+	err := d.port.Close()
+	d.port = nil
+	return err
 }
 
 func (d *bdn9SerialDevice) Name() string {
@@ -214,6 +248,14 @@ func (d *bdn9SerialDevice) Reset() error {
 	}
 	// magic bytes required to reset
 	pkt := NewPacket(COMMAND_RESET, 0xDE, 0xAD, 0xF0, 0x00)
+	return d.writeAll(pkt)
+}
+
+func (d *bdn9SerialDevice) Echo(b []byte) error {
+	if d.port == nil {
+		return NotOpenErr
+	}
+	pkt := NewPacket(COMMAND_ECHO, 0x1, 0x2, 0x3)
 	return d.writeAll(pkt)
 }
 

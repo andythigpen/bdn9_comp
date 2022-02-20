@@ -15,6 +15,7 @@ service BDN9Service {
   rpc SetMuteStatus(SetMuteStatusRequest) returns (SetMuteStatusReply) {}
   rpc EndCall(EndCallRequest) returns (EndCallReply) {}
   rpc Reset(ResetRequest) returns (ResetReply) {}
+  rpc Echo(EchoRequest) returns (EchoReply) {}
 }
 
 message SetRGBModeRequest {
@@ -74,3 +75,5 @@ message EndCallRequest {}
 message EndCallReply {}
 message ResetRequest {}
 message ResetReply {}
+message EchoRequest {}
+message EchoReply {}

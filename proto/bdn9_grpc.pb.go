@@ -30,6 +30,7 @@ type BDN9ServiceClient interface {
 	SetMuteStatus(ctx context.Context, in *SetMuteStatusRequest, opts ...grpc.CallOption) (*SetMuteStatusReply, error)
 	EndCall(ctx context.Context, in *EndCallRequest, opts ...grpc.CallOption) (*EndCallReply, error)
 	Reset(ctx context.Context, in *ResetRequest, opts ...grpc.CallOption) (*ResetReply, error)
+	Echo(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoReply, error)
 }
 
 type bDN9ServiceClient struct {
@@ -148,6 +149,15 @@ func (c *bDN9ServiceClient) Reset(ctx context.Context, in *ResetRequest, opts ..
 	return out, nil
 }
 
+func (c *bDN9ServiceClient) Echo(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoReply, error) {
+	out := new(EchoReply)
+	err := c.cc.Invoke(ctx, "/BDN9Service/Echo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BDN9ServiceServer is the server API for BDN9Service service.
 // All implementations must embed UnimplementedBDN9ServiceServer
 // for forward compatibility
@@ -164,6 +174,7 @@ type BDN9ServiceServer interface {
 	SetMuteStatus(context.Context, *SetMuteStatusRequest) (*SetMuteStatusReply, error)
 	EndCall(context.Context, *EndCallRequest) (*EndCallReply, error)
 	Reset(context.Context, *ResetRequest) (*ResetReply, error)
+	Echo(context.Context, *EchoRequest) (*EchoReply, error)
 	mustEmbedUnimplementedBDN9ServiceServer()
 }
 
@@ -206,6 +217,9 @@ func (UnimplementedBDN9ServiceServer) EndCall(context.Context, *EndCallRequest) 
 }
 func (UnimplementedBDN9ServiceServer) Reset(context.Context, *ResetRequest) (*ResetReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Reset not implemented")
+}
+func (UnimplementedBDN9ServiceServer) Echo(context.Context, *EchoRequest) (*EchoReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Echo not implemented")
 }
 func (UnimplementedBDN9ServiceServer) mustEmbedUnimplementedBDN9ServiceServer() {}
 
@@ -436,6 +450,24 @@ func _BDN9Service_Reset_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BDN9Service_Echo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EchoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BDN9ServiceServer).Echo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/BDN9Service/Echo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BDN9ServiceServer).Echo(ctx, req.(*EchoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BDN9Service_ServiceDesc is the grpc.ServiceDesc for BDN9Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -490,6 +522,10 @@ var BDN9Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Reset",
 			Handler:    _BDN9Service_Reset_Handler,
+		},
+		{
+			MethodName: "Echo",
+			Handler:    _BDN9Service_Echo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -86,7 +86,7 @@ func OpenDevice() {
 	if len(server) != 0 {
 		openGrpc()
 	} else {
-		if _, err := OpenSerialDevice(); err != nil {
+		if _, err := OpenSerialDevice(nil); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -103,7 +103,7 @@ func openGrpc() {
 	client = pb.NewBDN9ServiceClient(conn)
 }
 
-func OpenSerialDevice() (serial.BDN9SerialDevice, error) {
+func OpenSerialDevice(handler serial.EventHandler) (serial.BDN9SerialDevice, error) {
 	var err error
 	port := viper.GetString("port")
 	if len(port) == 0 {
@@ -112,7 +112,7 @@ func OpenSerialDevice() (serial.BDN9SerialDevice, error) {
 			return nil, err
 		}
 	}
-	device = serial.NewDevice()
+	device = serial.NewDevice(handler)
 	if err := device.Open(port); err != nil {
 		return nil, err
 	}
