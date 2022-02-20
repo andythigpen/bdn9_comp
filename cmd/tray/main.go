@@ -23,7 +23,7 @@ var handler serialHandler
 
 type serialHandler struct{}
 
-func sendMuteKeys(windowName string, muteKeys []string) error {
+func focusWindow(windowName string) error {
 	pids, err := robotgo.FindIds(windowName)
 	if err != nil {
 		return err
@@ -36,6 +36,13 @@ func sendMuteKeys(windowName string, muteKeys []string) error {
 	}
 	err = robotgo.ActiveName(windowName)
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func sendMuteKeys(windowName string, muteKeys []string) error {
+	if err := focusWindow(windowName); err != nil {
 		return err
 	}
 	key := muteKeys[0]
@@ -51,6 +58,20 @@ func sendMuteKeys(windowName string, muteKeys []string) error {
 func (h serialHandler) HandleEvent(d serial.BDN9SerialDevice, ev serial.Event) {
 	fmt.Printf("ev: %v\n", ev)
 	switch ev {
+	case serial.EVENT_FOCUS_SLACK:
+		slackWindowName := viper.GetString("slackWindowName")
+		err := focusWindow(slackWindowName)
+		if err != nil {
+			fmt.Printf("No program found: %s", err)
+			return
+		}
+	case serial.EVENT_FOCUS_TEAMS:
+		teamsWindowName := viper.GetString("teamsWindowName")
+		err := focusWindow(teamsWindowName)
+		if err != nil {
+			fmt.Printf("No program found: %s", err)
+			return
+		}
 	case serial.EVENT_MUTE_SLACK:
 		slackWindowName := viper.GetString("slackWindowName")
 		slackMuteKeys := viper.GetStringSlice("slackMuteKeys")
