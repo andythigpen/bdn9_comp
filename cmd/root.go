@@ -47,7 +47,7 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig, openDevice)
+	cobra.OnInitialize(InitConfig, OpenDevice)
 
 	path, _ := xdg.ConfigFile("bdn9")
 
@@ -55,8 +55,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&persist, "persist", "p", false, "Write changes to EEPROM")
 }
 
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
+// InitConfig reads in config file and ENV variables if set.
+func InitConfig() {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -81,12 +81,15 @@ func initConfig() {
 	}
 }
 
-func openDevice() {
+func OpenDevice() {
 	port := viper.GetString("port")
 	if len(port) == 0 {
 		openGrpc()
 	} else {
-		openSerialDevice()
+		if _, err := OpenSerialDevice(); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	}
 }
 
@@ -100,12 +103,11 @@ func openGrpc() {
 	client = pb.NewBDN9ServiceClient(conn)
 }
 
-func openSerialDevice() {
+func OpenSerialDevice() (serial.BDN9SerialDevice, error) {
 	port := viper.GetString("port")
 	device = serial.NewDevice()
 	if err := device.Open(port); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	if persist {
@@ -113,4 +115,5 @@ func openSerialDevice() {
 	}
 
 	client = serial.NewSerialClient(device)
+	return device, nil
 }
