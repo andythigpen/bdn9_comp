@@ -79,6 +79,13 @@ func InitConfig() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	// set defaults
+	viper.SetDefault("bind", "localhost:17432")
+	viper.SetDefault("slackWindowName", "slack")
+	viper.SetDefault("slackMuteKeys", []string{"m"})
+	viper.SetDefault("teamsWindowName", "teams")
+	viper.SetDefault("teamsMuteKeys", []string{"m", "lcmd", "lshift"})
 }
 
 func OpenDevice() {

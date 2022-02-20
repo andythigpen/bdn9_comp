@@ -10,6 +10,7 @@ import (
 	"github.com/andythigpen/bdn9_comp/v2/serial"
 	"github.com/andythigpen/bdn9_comp/v2/service"
 	"github.com/getlantern/systray"
+	"github.com/go-vgo/robotgo"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 )
@@ -22,8 +23,51 @@ var handler serialHandler
 
 type serialHandler struct{}
 
+func sendMuteKeys(windowName string, muteKeys []string) error {
+	pids, err := robotgo.FindIds(windowName)
+	if err != nil {
+		return err
+	}
+	if len(pids) == 0 {
+		return fmt.Errorf("No window with name %s found", windowName)
+	}
+	if len(pids) > 1 {
+		return fmt.Errorf("Multiple windows with name %s found", windowName)
+	}
+	err = robotgo.ActiveName(windowName)
+	if err != nil {
+		return err
+	}
+	key := muteKeys[0]
+	muteKeys = muteKeys[1:]
+	args := make([]interface{}, len(muteKeys))
+	for i := range muteKeys {
+		args[i] = muteKeys[i]
+	}
+	robotgo.KeyTap(key, args...)
+	return nil
+}
+
 func (h serialHandler) HandleEvent(d serial.BDN9SerialDevice, ev serial.Event) {
 	fmt.Printf("ev: %v\n", ev)
+	switch ev {
+	case serial.EVENT_MUTE_SLACK:
+		slackWindowName := viper.GetString("slackWindowName")
+		slackMuteKeys := viper.GetStringSlice("slackMuteKeys")
+		err := sendMuteKeys(slackWindowName, slackMuteKeys)
+		if err != nil {
+			fmt.Printf("No program found: %s", err)
+			return
+		}
+	case serial.EVENT_MUTE_TEAMS:
+		teamsWindowName := viper.GetString("teamsWindowName")
+		teamsMuteKeys := viper.GetStringSlice("teamsMuteKeys")
+		err := sendMuteKeys(teamsWindowName, teamsMuteKeys)
+		if err != nil {
+			fmt.Printf("No program found: %s", err)
+			return
+		}
+	}
 }
 
 func main() {
@@ -56,9 +100,6 @@ func onReady() {
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the app")
 
 	bindAddress := viper.GetString("bind")
-	if len(bindAddress) == 0 {
-		bindAddress = "localhost:17432"
-	}
 
 	initServer := func() {
 		var err error
