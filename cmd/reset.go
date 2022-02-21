@@ -10,7 +10,7 @@ import (
 // resetCmd represents the reset command
 var resetCmd = &cobra.Command{
 	Use:   "reset",
-	Short: "Resets the keyboard",
+	Short: "Resets the keyboard to flash new firmware",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := client.Reset(context.Background(), &pb.ResetRequest{})
 		return err

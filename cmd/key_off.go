@@ -22,6 +22,6 @@ var keyOffCmd = &cobra.Command{
 
 func init() {
 	keyOffCmd.Flags().Uint8VarP(&key, "key", "k", 0, "Key index (max 11)")
-	keyOffCmd.Flags().Uint8VarP(&layer, "layer", "l", 0, "Layer (max 2)")
+	keyOffCmd.Flags().Uint8VarP(&layer, "layer", "l", 0, "Layer")
 	keyCmd.AddCommand(keyOffCmd)
 }

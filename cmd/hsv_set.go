@@ -10,7 +10,7 @@ import (
 // hsvSetCmd represents the hsv set command
 var hsvSetCmd = &cobra.Command{
 	Use:   "set",
-	Short: "Sets the RGB matrix animation mode",
+	Short: "Sets the matrix HSV values",
 	Args:  cobra.ExactArgs(3),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		h, s, v, err := parseHSV(args)

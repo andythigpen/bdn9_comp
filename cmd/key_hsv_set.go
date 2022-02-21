@@ -44,7 +44,7 @@ var keyHsvSetCmd = &cobra.Command{
 
 func init() {
 	keyHsvSetCmd.Flags().Uint8VarP(&key, "key", "k", 0, "Key index (max 11)")
-	keyHsvSetCmd.Flags().Uint8VarP(&layer, "layer", "l", 0, "Layer (max 2)")
+	keyHsvSetCmd.Flags().Uint8VarP(&layer, "layer", "l", 0, "Layer")
 	keyHsvSetCmd.Flags().BoolVar(&turnOn, "on", false, "Also turn the key on")
 	keyCmd.AddCommand(keyHsvSetCmd)
 }

@@ -1,6 +1,9 @@
 package serial
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 const (
 	LAYER_DEFAULT = iota
@@ -11,6 +14,14 @@ const (
 	LAYER_MAX // not a valid layer
 )
 
+var layerDesc = map[Layer]string{
+	LAYER_DEFAULT:     "DEFAULT      - Main (default) layer",
+	LAYER_PROGRAMMING: "PROGRAMMING  - Nvim test, runner, and debug start macros",
+	LAYER_DEBUGGING:   "DEBUGGING    - Nvim debugging macros",
+	LAYER_SLACK:       "SLACK        - Slack call macros",
+	LAYER_TEAMS:       "TEAMS        - Teams call macros",
+}
+
 type Layer int
 
 func (l Layer) IsValid() error {
@@ -18,4 +29,8 @@ func (l Layer) IsValid() error {
 		return nil
 	}
 	return errors.New("Invalid layer")
+}
+
+func (l Layer) String() string {
+	return fmt.Sprintf("%2d: %s", l, layerDesc[l])
 }
