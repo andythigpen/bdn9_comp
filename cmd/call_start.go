@@ -4,7 +4,6 @@ import (
 	"context"
 
 	pb "github.com/andythigpen/bdn9_comp/v2/proto"
-	"github.com/andythigpen/bdn9_comp/v2/serial"
 	"github.com/spf13/cobra"
 )
 
@@ -15,13 +14,13 @@ var callStartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Starts a call mode",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var layer uint32
+		var layer pb.Layer
 		var muted bool
 		if teams {
-			layer = serial.LAYER_TEAMS
+			layer = pb.Layer_LAYER_TEAMS
 			muted = true // teams starts muted
 		} else {
-			layer = serial.LAYER_SLACK
+			layer = pb.Layer_LAYER_SLACK
 			muted = false // slack does not start muted
 		}
 		req := &pb.ActivateLayerRequest{Layer: layer}

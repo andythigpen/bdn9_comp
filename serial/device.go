@@ -6,6 +6,8 @@ import (
 
 	"go.bug.st/serial"
 	"go.bug.st/serial/enumerator"
+
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 )
 
 var NotOpenErr = fmt.Errorf("Device not open")
@@ -16,14 +18,14 @@ type BDN9SerialDevice interface {
 	IsOpen() bool
 	Close() error
 	Name() string
-	SetRGBMode(mode RGBMode) error
+	SetRGBMode(mode pb.RGBMode) error
 	SetMatrixHSV(h uint8, s uint8, v uint8) error
 	ToggleMatrix() error
-	SetIndicatorHSV(layer Layer, index uint8, h uint8, s uint8, v uint8) error
-	ToggleIndicator(layer Layer, index uint8) error
-	EnableIndicator(layer Layer, index uint8) error
-	DisableIndicator(layer Layer, index uint8) error
-	ActivateLayer(layer Layer) error
+	SetIndicatorHSV(layer pb.Layer, index uint8, h uint8, s uint8, v uint8) error
+	ToggleIndicator(layer pb.Layer, index uint8) error
+	EnableIndicator(layer pb.Layer, index uint8) error
+	DisableIndicator(layer pb.Layer, index uint8) error
+	ActivateLayer(layer pb.Layer) error
 	SetSpeed(speed uint8) error
 	SetMuteStatus(muted bool) error
 	EndCall() error
@@ -136,7 +138,7 @@ func (d *bdn9SerialDevice) DisablePersist() {
 	d.persist = 0
 }
 
-func (d *bdn9SerialDevice) SetRGBMode(mode RGBMode) error {
+func (d *bdn9SerialDevice) SetRGBMode(mode pb.RGBMode) error {
 	if d.port == nil {
 		return NotOpenErr
 	}
@@ -163,7 +165,7 @@ func (d *bdn9SerialDevice) ToggleMatrix() error {
 	return d.writeAll(pkt)
 }
 
-func (d *bdn9SerialDevice) SetIndicatorHSV(layer Layer, index uint8, h uint8, s uint8, v uint8) error {
+func (d *bdn9SerialDevice) SetIndicatorHSV(layer pb.Layer, index uint8, h uint8, s uint8, v uint8) error {
 	if d.port == nil {
 		return NotOpenErr
 	}
@@ -174,7 +176,7 @@ func (d *bdn9SerialDevice) SetIndicatorHSV(layer Layer, index uint8, h uint8, s 
 	return d.writeAll(pkt)
 }
 
-func (d *bdn9SerialDevice) ToggleIndicator(layer Layer, index uint8) error {
+func (d *bdn9SerialDevice) ToggleIndicator(layer pb.Layer, index uint8) error {
 	if d.port == nil {
 		return NotOpenErr
 	}
@@ -185,7 +187,7 @@ func (d *bdn9SerialDevice) ToggleIndicator(layer Layer, index uint8) error {
 	return d.writeAll(pkt)
 }
 
-func (d *bdn9SerialDevice) EnableIndicator(layer Layer, index uint8) error {
+func (d *bdn9SerialDevice) EnableIndicator(layer pb.Layer, index uint8) error {
 	if d.port == nil {
 		return NotOpenErr
 	}
@@ -196,7 +198,7 @@ func (d *bdn9SerialDevice) EnableIndicator(layer Layer, index uint8) error {
 	return d.writeAll(pkt)
 }
 
-func (d *bdn9SerialDevice) DisableIndicator(layer Layer, index uint8) error {
+func (d *bdn9SerialDevice) DisableIndicator(layer pb.Layer, index uint8) error {
 	if d.port == nil {
 		return NotOpenErr
 	}
@@ -207,7 +209,7 @@ func (d *bdn9SerialDevice) DisableIndicator(layer Layer, index uint8) error {
 	return d.writeAll(pkt)
 }
 
-func (d *bdn9SerialDevice) ActivateLayer(layer Layer) error {
+func (d *bdn9SerialDevice) ActivateLayer(layer pb.Layer) error {
 	if d.port == nil {
 		return NotOpenErr
 	}

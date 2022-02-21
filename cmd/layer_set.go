@@ -18,7 +18,7 @@ var layerSetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		_, err = client.ActivateLayer(context.Background(), &pb.ActivateLayerRequest{Layer: uint32(l)})
+		_, err = client.ActivateLayer(context.Background(), &pb.ActivateLayerRequest{Layer: pb.Layer(l)})
 		return err
 	},
 }

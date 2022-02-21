@@ -21,12 +21,14 @@ var keyHsvSetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		pbLayer := pb.Layer(layer)
+		pbLayer.Enum()
 		_, err = client.SetIndicatorHSV(context.Background(), &pb.SetIndicatorHSVRequest{
 			Key:   uint32(key),
 			H:     uint32(h),
 			S:     uint32(s),
 			V:     uint32(v),
-			Layer: uint32(layer),
+			Layer: pbLayer,
 		})
 		if err != nil {
 			return err
@@ -34,7 +36,7 @@ var keyHsvSetCmd = &cobra.Command{
 		if turnOn {
 			_, err = client.EnableIndicator(context.Background(), &pb.EnableIndicatorRequest{
 				Key:   uint32(key),
-				Layer: uint32(layer),
+				Layer: pbLayer,
 			})
 			return err
 		}

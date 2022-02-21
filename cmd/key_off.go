@@ -14,7 +14,7 @@ var keyOffCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := client.DisableIndicator(context.Background(), &pb.DisableIndicatorRequest{
 			Key:   uint32(key),
-			Layer: uint32(layer),
+			Layer: pb.Layer(layer),
 		})
 		return err
 	},

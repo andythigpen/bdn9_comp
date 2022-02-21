@@ -17,7 +17,7 @@ func NewSerialClient(device BDN9SerialDevice) pb.BDN9ServiceClient {
 }
 
 func (c *bdn9SerialClient) SetRGBMode(ctx context.Context, in *pb.SetRGBModeRequest, opts ...grpc.CallOption) (*pb.SetRGBModeReply, error) {
-	return nil, c.device.SetRGBMode(RGBMode(in.Mode))
+	return nil, c.device.SetRGBMode(pb.RGBMode(in.Mode))
 }
 
 func (c *bdn9SerialClient) SetMatrixHSV(ctx context.Context, in *pb.SetMatrixHSVRequest, opts ...grpc.CallOption) (*pb.SetMatrixHSVReply, error) {
@@ -29,23 +29,23 @@ func (c *bdn9SerialClient) ToggleMatrix(ctx context.Context, in *pb.ToggleMatrix
 }
 
 func (c *bdn9SerialClient) SetIndicatorHSV(ctx context.Context, in *pb.SetIndicatorHSVRequest, opts ...grpc.CallOption) (*pb.SetIndicatorHSVReply, error) {
-	return nil, c.device.SetIndicatorHSV(Layer(in.Layer), uint8(in.Key), uint8(in.H), uint8(in.S), uint8(in.V))
+	return nil, c.device.SetIndicatorHSV(pb.Layer(in.Layer), uint8(in.Key), uint8(in.H), uint8(in.S), uint8(in.V))
 }
 
 func (c *bdn9SerialClient) ToggleIndicator(ctx context.Context, in *pb.ToggleIndicatorRequest, opts ...grpc.CallOption) (*pb.ToggleIndicatorReply, error) {
-	return nil, c.device.ToggleIndicator(Layer(in.Layer), uint8(in.Key))
+	return nil, c.device.ToggleIndicator(pb.Layer(in.Layer), uint8(in.Key))
 }
 
 func (c *bdn9SerialClient) EnableIndicator(ctx context.Context, in *pb.EnableIndicatorRequest, opts ...grpc.CallOption) (*pb.EnableIndicatorReply, error) {
-	return nil, c.device.EnableIndicator(Layer(in.Layer), uint8(in.Key))
+	return nil, c.device.EnableIndicator(pb.Layer(in.Layer), uint8(in.Key))
 }
 
 func (c *bdn9SerialClient) DisableIndicator(ctx context.Context, in *pb.DisableIndicatorRequest, opts ...grpc.CallOption) (*pb.DisableIndicatorReply, error) {
-	return nil, c.device.DisableIndicator(Layer(in.Layer), uint8(in.Key))
+	return nil, c.device.DisableIndicator(pb.Layer(in.Layer), uint8(in.Key))
 }
 
 func (c *bdn9SerialClient) ActivateLayer(ctx context.Context, in *pb.ActivateLayerRequest, opts ...grpc.CallOption) (*pb.ActivateLayerReply, error) {
-	return nil, c.device.ActivateLayer(Layer(in.Layer))
+	return nil, c.device.ActivateLayer(pb.Layer(in.Layer))
 }
 
 func (c *bdn9SerialClient) SetSpeed(ctx context.Context, in *pb.SetSpeedRequest, opts ...grpc.CallOption) (*pb.SetSpeedReply, error) {

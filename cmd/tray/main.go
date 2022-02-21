@@ -194,10 +194,10 @@ func onReady() {
 					continue
 				}
 				ctx := context.Background()
-				for l := serial.LAYER_DEFAULT; l < serial.LAYER_MAX; l++ {
+				for l := pb.Layer_LAYER_DEFAULT; l < pb.Layer_LAYER_MAX; l++ {
 					for k := 0; k < 12; k++ {
 						server.DisableIndicator(ctx, &pb.DisableIndicatorRequest{
-							Layer: uint32(l),
+							Layer: pb.Layer(l),
 							Key:   uint32(k),
 						})
 					}
@@ -208,7 +208,7 @@ func onReady() {
 				}
 				ctx := context.Background()
 				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
-					Layer: serial.LAYER_DEFAULT,
+					Layer: pb.Layer_LAYER_DEFAULT,
 				})
 			case <-mProgrammingLayer.ClickedCh:
 				if server == nil {
@@ -216,7 +216,7 @@ func onReady() {
 				}
 				ctx := context.Background()
 				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
-					Layer: serial.LAYER_PROGRAMMING,
+					Layer: pb.Layer_LAYER_PROGRAMMING,
 				})
 			case <-mDebuggingLayer.ClickedCh:
 				if server == nil {
@@ -224,7 +224,7 @@ func onReady() {
 				}
 				ctx := context.Background()
 				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
-					Layer: serial.LAYER_DEBUGGING,
+					Layer: pb.Layer_LAYER_DEBUGGING,
 				})
 			case <-mStartSlack.ClickedCh:
 				if server == nil {
@@ -232,7 +232,7 @@ func onReady() {
 				}
 				ctx := context.Background()
 				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
-					Layer: serial.LAYER_SLACK,
+					Layer: pb.Layer_LAYER_SLACK,
 				})
 				muted = false
 				server.SetMuteStatus(ctx, &pb.SetMuteStatusRequest{Muted: muted})
@@ -242,7 +242,7 @@ func onReady() {
 				}
 				ctx := context.Background()
 				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
-					Layer: serial.LAYER_TEAMS,
+					Layer: pb.Layer_LAYER_TEAMS,
 				})
 				muted = true
 				server.SetMuteStatus(ctx, &pb.SetMuteStatusRequest{Muted: muted})

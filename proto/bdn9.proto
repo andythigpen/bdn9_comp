@@ -2,6 +2,58 @@ syntax = "proto3";
 
 option go_package = "github.com/andythigpen/bdn9_comp/v2/proto";
 
+enum Layer {
+	LAYER_DEFAULT = 0;
+	LAYER_PROGRAMMING = 1;
+	LAYER_DEBUGGING = 2;
+	LAYER_SLACK = 3;
+	LAYER_TEAMS = 4;
+	LAYER_MAX = 5; // not a valid layer
+}
+
+enum RGBMode {
+    RGB_MATRIX_INVALID = 0;  // not valid
+	RGB_MATRIX_SOLID_COLOR = 1;
+	RGB_MATRIX_ALPHAS_MODS = 2;
+	RGB_MATRIX_GRADIENT_UP_DOWN = 3;
+	RGB_MATRIX_GRADIENT_LEFT_RIGHT = 4;
+	RGB_MATRIX_BREATHING = 5;
+	RGB_MATRIX_BAND_SAT = 6;
+	RGB_MATRIX_BAND_VAL = 7;
+	RGB_MATRIX_BAND_PINWHEEL_SAT = 8;
+	RGB_MATRIX_BAND_PINWHEEL_VAL = 9;
+	RGB_MATRIX_BAND_SPIRAL_SAT = 10;
+	RGB_MATRIX_BAND_SPIRAL_VAL = 11;
+	RGB_MATRIX_CYCLE_ALL = 12;
+	RGB_MATRIX_CYCLE_LEFT_RIGHT = 13;
+	RGB_MATRIX_CYCLE_UP_DOWN = 14;
+	RGB_MATRIX_CYCLE_OUT_IN = 15;
+	RGB_MATRIX_CYCLE_OUT_IN_DUAL = 16;
+	RGB_MATRIX_RAINBOW_MOVING_CHEVRON = 17;
+	RGB_MATRIX_CYCLE_PINWHEEL = 18;
+	RGB_MATRIX_CYCLE_SPIRAL = 19;
+	RGB_MATRIX_DUAL_BEACON = 20;
+	RGB_MATRIX_RAINBOW_BEACON = 21;
+	RGB_MATRIX_RAINBOW_PINWHEELS = 22;
+	RGB_MATRIX_RAINDROPS = 23;
+	RGB_MATRIX_JELLYBEAN_RAINDROPS = 24;
+	RGB_MATRIX_TYPING_HEATMAP = 25;
+	RGB_MATRIX_DIGITAL_RAIN = 26;
+	RGB_MATRIX_SOLID_REACTIVE_SIMPLE = 27;
+	RGB_MATRIX_SOLID_REACTIVE = 28;
+	RGB_MATRIX_SOLID_REACTIVE_WIDE = 29;
+	RGB_MATRIX_SOLID_REACTIVE_MULTIWIDE = 30;
+	RGB_MATRIX_SOLID_REACTIVE_CROSS = 31;
+	RGB_MATRIX_SOLID_REACTIVE_MULTICROSS = 32;
+	RGB_MATRIX_SOLID_REACTIVE_NEXUS = 33;
+	RGB_MATRIX_SOLID_REACTIVE_MULTINEXUS = 34;
+	RGB_MATRIX_SPLASH = 35;
+	RGB_MATRIX_MULTISPLASH = 36;
+	RGB_MATRIX_SOLID_SPLASH = 37;
+	RGB_MATRIX_SOLID_MULTISPLASH = 38;
+	RGB_MATRIX_MAX = 39;  // not valid
+ }
+
 service BDN9Service {
   rpc SetRGBMode(SetRGBModeRequest) returns (SetRGBModeReply) {}
   rpc SetMatrixHSV(SetMatrixHSVRequest) returns (SetMatrixHSVReply) {}
@@ -40,26 +92,26 @@ message SetIndicatorHSVRequest {
     uint32 v = 3;
     uint32 key = 4;
     bool persist = 5;
-    uint32 layer = 6;
+    Layer layer = 6;
 }
 message SetIndicatorHSVReply {}
 message ToggleIndicatorRequest {
     uint32 key = 1;
-    uint32 layer = 2;
+    Layer layer = 2;
 }
 message ToggleIndicatorReply {}
 message EnableIndicatorRequest {
     uint32 key = 1;
-    uint32 layer = 2;
+    Layer layer = 2;
 }
 message EnableIndicatorReply {}
 message DisableIndicatorRequest {
     uint32 key = 1;
-    uint32 layer = 2;
+    Layer layer = 2;
 }
 message DisableIndicatorReply {}
 message ActivateLayerRequest {
-    uint32 layer = 1;
+    Layer layer = 1;
 }
 message ActivateLayerReply {}
 message SetSpeedRequest {

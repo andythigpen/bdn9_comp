@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/andythigpen/bdn9_comp/v2/serial"
+	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 	"github.com/spf13/cobra"
 )
 
@@ -12,9 +12,9 @@ var modeListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Lists the RGB matrix animation modes",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var i serial.RGBMode
-		for i = serial.RGB_MATRIX_INVALID + 1; i < serial.RGB_MATRIX_MAX; i++ {
-			fmt.Println(i.String())
+		var i pb.RGBMode
+		for i = pb.RGBMode_RGB_MATRIX_INVALID + 1; i < pb.RGBMode_RGB_MATRIX_MAX; i++ {
+			fmt.Println(i.Description())
 		}
 		return nil
 	},

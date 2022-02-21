@@ -1,3 +1,8 @@
+.PHONY: build
+build:
+	go build -o bin/bdn9 main.go
+	go build -o bin/bdn9_tray cmd/tray/main.go
+
 .PHONY: proto
 proto:
 	protoc --go_out=. --go_opt=paths=source_relative \
