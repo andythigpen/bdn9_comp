@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net"
 
@@ -18,8 +19,10 @@ import (
 var listening = false
 var device serial.BDN9SerialDevice
 var grpcServer *grpc.Server
+var server pb.BDN9ServiceServer
 var listener net.Listener
 var handler serialHandler
+var muted = false
 
 type serialHandler struct{}
 
@@ -116,6 +119,18 @@ func onReady() {
 	systray.SetTooltip("Keyboard daemon")
 	systray.SetTemplateIcon(icon.Data, icon.Data)
 
+	mClearIndicators := systray.AddMenuItem("Clear indicators", "Clear indicators")
+	systray.AddSeparator()
+	mLayers := systray.AddMenuItem("Layers", "Layers")
+	mDefaultLayer := mLayers.AddSubMenuItem("Default", "Default")
+	mProgrammingLayer := mLayers.AddSubMenuItem("Programming", "Programming")
+	mDebuggingLayer := mLayers.AddSubMenuItem("Debugging", "Debugging")
+	mCalls := systray.AddMenuItem("Calls", "Calls")
+	mStartSlack := mCalls.AddSubMenuItem("Start Slack Call", "Start Slack Call")
+	mStartTeams := mCalls.AddSubMenuItem("Start Teams Call", "Start Teams Call")
+	mMuteToggle := mCalls.AddSubMenuItem("Toggle Mute", "Toggle Mute")
+	mEndCall := mCalls.AddSubMenuItem("End Call", "End a call in progress")
+	systray.AddSeparator()
 	mSerial := systray.AddMenuItem("Serial: initializing", "initializing")
 	mServer := systray.AddMenuItem("Server: initializing", "initializing")
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the app")
@@ -134,10 +149,15 @@ func onReady() {
 		}
 		var opts []grpc.ServerOption
 		grpcServer = grpc.NewServer(opts...)
-		server := service.NewService(device)
+		server = service.NewService(device)
 		pb.RegisterBDN9ServiceServer(grpcServer, server)
 		mServer.SetTitle(fmt.Sprintf("Server: listening on %s", bindAddress))
 		mServer.SetTooltip("listening")
+		mClearIndicators.Enable()
+		mStartSlack.Enable()
+		mStartTeams.Enable()
+		mMuteToggle.Enable()
+		mEndCall.Enable()
 		// this is a blocking call
 		if err := grpcServer.Serve(listener); err != nil {
 			mServer.SetTitle(fmt.Sprintf("Failed to serve: %s", err))
@@ -146,6 +166,11 @@ func onReady() {
 	}
 
 	initSerial := func() {
+		mClearIndicators.Disable()
+		mStartSlack.Disable()
+		mStartSlack.Disable()
+		mMuteToggle.Disable()
+		mEndCall.Disable()
 		if device != nil && device.IsOpen() {
 			device.Close()
 		}
@@ -164,6 +189,76 @@ func onReady() {
 			case <-mQuitOrig.ClickedCh:
 				systray.Quit()
 				return
+			case <-mClearIndicators.ClickedCh:
+				if server == nil {
+					continue
+				}
+				ctx := context.Background()
+				for l := serial.LAYER_DEFAULT; l < serial.LAYER_MAX; l++ {
+					for k := 0; k < 12; k++ {
+						server.DisableIndicator(ctx, &pb.DisableIndicatorRequest{
+							Layer: uint32(l),
+							Key:   uint32(k),
+						})
+					}
+				}
+			case <-mDefaultLayer.ClickedCh:
+				if server == nil {
+					continue
+				}
+				ctx := context.Background()
+				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
+					Layer: serial.LAYER_DEFAULT,
+				})
+			case <-mProgrammingLayer.ClickedCh:
+				if server == nil {
+					continue
+				}
+				ctx := context.Background()
+				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
+					Layer: serial.LAYER_PROGRAMMING,
+				})
+			case <-mDebuggingLayer.ClickedCh:
+				if server == nil {
+					continue
+				}
+				ctx := context.Background()
+				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
+					Layer: serial.LAYER_DEBUGGING,
+				})
+			case <-mStartSlack.ClickedCh:
+				if server == nil {
+					continue
+				}
+				ctx := context.Background()
+				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
+					Layer: serial.LAYER_SLACK,
+				})
+				muted = false
+				server.SetMuteStatus(ctx, &pb.SetMuteStatusRequest{Muted: muted})
+			case <-mStartTeams.ClickedCh:
+				if server == nil {
+					continue
+				}
+				ctx := context.Background()
+				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
+					Layer: serial.LAYER_TEAMS,
+				})
+				muted = true
+				server.SetMuteStatus(ctx, &pb.SetMuteStatusRequest{Muted: muted})
+			case <-mMuteToggle.ClickedCh:
+				if server == nil {
+					continue
+				}
+				ctx := context.Background()
+				muted = !muted
+				server.SetMuteStatus(ctx, &pb.SetMuteStatusRequest{Muted: muted})
+			case <-mEndCall.ClickedCh:
+				if server == nil {
+					continue
+				}
+				ctx := context.Background()
+				server.EndCall(ctx, &pb.EndCallRequest{})
 			case <-mSerial.ClickedCh:
 				initSerial()
 			case <-mServer.ClickedCh:
