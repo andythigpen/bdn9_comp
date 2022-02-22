@@ -1,3 +1,6 @@
+//go:build debugcmd
+// +build debugcmd
+
 package cmd
 
 import (
