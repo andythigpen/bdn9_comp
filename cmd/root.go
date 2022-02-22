@@ -83,8 +83,10 @@ func InitConfig() {
 	// set defaults
 	viper.SetDefault("bind", "localhost:17432")
 	viper.SetDefault("slackWindowName", "slack")
+	viper.SetDefault("slackWindowTitle", "slack")
 	viper.SetDefault("slackMuteKeys", []string{"m"})
 	viper.SetDefault("teamsWindowName", "teams")
+	viper.SetDefault("teamsWindowTitle", "microsoft teams")
 	viper.SetDefault("teamsMuteKeys", []string{"m", "lcmd", "lshift"})
 }
 

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
+	"time"
 
 	"github.com/andythigpen/bdn9_comp/v2/cmd"
 	"github.com/andythigpen/bdn9_comp/v2/cmd/tray/icon"
@@ -23,29 +25,52 @@ var server pb.BDN9ServiceServer
 var listener net.Listener
 var handler serialHandler
 var muted = false
+var slackPid int32 = 0
+var teamsPid int32 = 0
 
 type serialHandler struct{}
 
-func focusWindow(windowName string) error {
+func findPid(windowName string, windowTitle string) (int32, error) {
 	pids, err := robotgo.FindIds(windowName)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if len(pids) == 0 {
-		return fmt.Errorf("No window with name %s found", windowName)
+		return 0, fmt.Errorf("No window with name %s found", windowName)
 	}
 	if len(pids) > 1 {
-		return fmt.Errorf("Multiple windows with name %s found", windowName)
+		foundPids := make([]int32, 0)
+		for _, pid := range pids {
+			title := robotgo.GetTitle(pid)
+			if strings.Compare(strings.ToLower(windowTitle), strings.ToLower(title)) == 0 {
+				foundPids = append(foundPids, pid)
+			}
+		}
+		if len(foundPids) == 0 {
+			return 0, fmt.Errorf("No windows with title %s found", windowTitle)
+		}
+		if len(foundPids) > 1 {
+			return 0, fmt.Errorf("Multiple windows with title %s found", windowTitle)
+		}
+		return foundPids[0], nil
 	}
-	err = robotgo.ActiveName(windowName)
+	return pids[0], nil
+}
+
+func focusWindow(windowName string, windowTitle string) error {
+	pid, err := findPid(windowName, windowTitle)
 	if err != nil {
 		return err
 	}
-	return nil
+	return robotgo.ActivePID(pid)
 }
 
-func sendMuteKeys(windowName string, muteKeys []string) error {
-	if err := focusWindow(windowName); err != nil {
+func sendMuteKeys(pid int32, windowName string, windowTitle string, muteKeys []string) error {
+	if pid == 0 {
+		if err := focusWindow(windowName, windowTitle); err != nil {
+			return err
+		}
+	} else if err := robotgo.ActivePID(pid); err != nil {
 		return err
 	}
 	key := muteKeys[0]
@@ -59,26 +84,29 @@ func sendMuteKeys(windowName string, muteKeys []string) error {
 }
 
 func (h serialHandler) HandleEvent(d serial.BDN9SerialDevice, ev serial.Event) {
+	var err error
+	slackWindowName := viper.GetString("slackWindowName")
+	slackWindowTitle := viper.GetString("slackWindowTitle")
+	teamsWindowName := viper.GetString("teamsWindowName")
+	teamsWindowTitle := viper.GetString("teamsWindowTitle")
+
 	fmt.Printf("ev: %v\n", ev)
 	switch ev {
 	case serial.EVENT_FOCUS_SLACK:
-		slackWindowName := viper.GetString("slackWindowName")
-		err := focusWindow(slackWindowName)
+		err = focusWindow(slackWindowName, slackWindowTitle)
 		if err != nil {
 			fmt.Printf("No program found: %s", err)
 			return
 		}
 	case serial.EVENT_FOCUS_TEAMS:
-		teamsWindowName := viper.GetString("teamsWindowName")
-		err := focusWindow(teamsWindowName)
+		err = focusWindow(teamsWindowName, teamsWindowTitle)
 		if err != nil {
 			fmt.Printf("No program found: %s", err)
 			return
 		}
 	case serial.EVENT_MUTE_SLACK:
-		slackWindowName := viper.GetString("slackWindowName")
 		slackMuteKeys := viper.GetStringSlice("slackMuteKeys")
-		err := sendMuteKeys(slackWindowName, slackMuteKeys)
+		err = sendMuteKeys(slackPid, slackWindowName, slackWindowTitle, slackMuteKeys)
 		if err != nil {
 			fmt.Printf("No program found: %s", err)
 			return
@@ -86,11 +114,40 @@ func (h serialHandler) HandleEvent(d serial.BDN9SerialDevice, ev serial.Event) {
 	case serial.EVENT_MUTE_TEAMS:
 		teamsWindowName := viper.GetString("teamsWindowName")
 		teamsMuteKeys := viper.GetStringSlice("teamsMuteKeys")
-		err := sendMuteKeys(teamsWindowName, teamsMuteKeys)
+		err := sendMuteKeys(teamsPid, teamsWindowName, teamsWindowTitle, teamsMuteKeys)
 		if err != nil {
 			fmt.Printf("No program found: %s", err)
 			return
 		}
+	case serial.EVENT_START_SLACK:
+		slackPid, err = findPid(slackWindowName, slackWindowTitle)
+		if err != nil {
+			fmt.Printf("%s\n", err)
+			// try again after waiting a second
+			go func() {
+				time.Sleep(1 * time.Second)
+				slackPid, err = findPid(slackWindowName, slackWindowTitle)
+				if err != nil {
+					fmt.Printf("%s\n", err)
+				}
+			}()
+		}
+	case serial.EVENT_START_TEAMS:
+		teamsPid, err = findPid(teamsWindowName, teamsWindowTitle)
+		if err != nil {
+			fmt.Printf("%s\n", err)
+			// try again after waiting a second
+			go func() {
+				time.Sleep(1 * time.Second)
+				teamsPid, err = findPid(teamsWindowName, teamsWindowTitle)
+				if err != nil {
+					fmt.Printf("%s\n", err)
+				}
+			}()
+		}
+	case serial.EVENT_END_CALL:
+		slackPid = 0
+		teamsPid = 0
 	}
 }
 
@@ -121,6 +178,8 @@ func onReady() {
 
 	mClearIndicators := systray.AddMenuItem("Clear indicators", "Clear indicators")
 	systray.AddSeparator()
+	mFocusSlack := systray.AddMenuItem("Focus Slack", "Focus Slack")
+	mFocusTeams := systray.AddMenuItem("Focus Teams", "Focus Teams")
 	mLayers := systray.AddMenuItem("Layers", "Layers")
 	mDefaultLayer := mLayers.AddSubMenuItem("Default", "Default")
 	mProgrammingLayer := mLayers.AddSubMenuItem("Programming", "Programming")
@@ -201,6 +260,18 @@ func onReady() {
 							Key:   uint32(k),
 						})
 					}
+				}
+			case <-mFocusSlack.ClickedCh:
+				slackWindowName := viper.GetString("slackWindowName")
+				slackWindowTitle := viper.GetString("slackWindowTitle")
+				if err := focusWindow(slackWindowName, slackWindowTitle); err != nil {
+					fmt.Printf("%s\n", err)
+				}
+			case <-mFocusTeams.ClickedCh:
+				teamsWindowName := viper.GetString("teamsWindowName")
+				teamsWindowTitle := viper.GetString("teamsWindowTitle")
+				if err := focusWindow(teamsWindowName, teamsWindowTitle); err != nil {
+					fmt.Printf("%s\n", err)
 				}
 			case <-mDefaultLayer.ClickedCh:
 				if server == nil {
