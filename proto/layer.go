@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+const KEY_MAX = 12
+
 var layerDesc = map[Layer]string{
 	Layer_LAYER_DEFAULT:     "DEFAULT      - Main (default) layer",
 	Layer_LAYER_PROGRAMMING: "PROGRAMMING  - Nvim test, runner, and debug start macros",

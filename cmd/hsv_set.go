@@ -17,11 +17,20 @@ var hsvSetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		_, err = client.SetMatrixHSV(context.Background(), &pb.SetMatrixHSVRequest{H: uint32(h), S: uint32(s), V: uint32(v)})
+		ctx := context.Background()
+		// shortcut to set mode at same time as hsv
+		if mode != uint8(pb.RGBMode_RGB_MATRIX_INVALID) {
+			_, err = client.SetRGBMode(ctx, &pb.SetRGBModeRequest{Mode: uint32(mode)})
+			if err != nil {
+				return err
+			}
+		}
+		_, err = client.SetMatrixHSV(ctx, &pb.SetMatrixHSVRequest{H: uint32(h), S: uint32(s), V: uint32(v)})
 		return err
 	},
 }
 
 func init() {
+	hsvSetCmd.Flags().Uint8VarP(&mode, "mode", "m", uint8(pb.RGBMode_RGB_MATRIX_INVALID), "Optional mode")
 	hsvCmd.AddCommand(hsvSetCmd)
 }
