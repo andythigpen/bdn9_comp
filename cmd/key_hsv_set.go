@@ -22,7 +22,6 @@ var keyHsvSetCmd = &cobra.Command{
 			return err
 		}
 		pbLayer := pb.Layer(layer)
-		pbLayer.Enum()
 		_, err = client.SetIndicatorHSV(context.Background(), &pb.SetIndicatorHSVRequest{
 			Key:   uint32(key),
 			H:     uint32(h),
