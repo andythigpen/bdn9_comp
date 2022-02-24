@@ -14,7 +14,7 @@ var keyClearCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 		ctx := context.Background()
-		for k := 0; k < pb.KEY_MAX; k++ {
+		for k := 0; k < pb.KEY_UPPER_MAX; k++ {
 			_, err = client.DisableIndicator(ctx, &pb.DisableIndicatorRequest{
 				Layer: pb.Layer(layer),
 				Key:   uint32(k),

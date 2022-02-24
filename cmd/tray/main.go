@@ -254,7 +254,7 @@ func onReady() {
 				}
 				ctx := context.Background()
 				for l := pb.Layer_LAYER_DEFAULT; l < pb.Layer_LAYER_MAX; l++ {
-					for k := 0; k < pb.KEY_MAX; k++ {
+					for k := 0; k < pb.KEY_UPPER_MAX; k++ {
 						server.DisableIndicator(ctx, &pb.DisableIndicatorRequest{
 							Layer: pb.Layer(l),
 							Key:   uint32(k),

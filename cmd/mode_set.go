@@ -9,6 +9,7 @@ import (
 )
 
 var mode uint8
+var speed uint8
 
 // modeSetCmd represents the mode set command
 var modeSetCmd = &cobra.Command{
@@ -21,11 +22,19 @@ var modeSetCmd = &cobra.Command{
 		if m, err = strconv.ParseUint(args[0], 10, 8); err != nil {
 			return err
 		}
-		_, err = client.SetRGBMode(context.Background(), &pb.SetRGBModeRequest{Mode: uint32(m)})
+		ctx := context.Background()
+		if speed > 0 {
+			_, err = client.SetSpeed(ctx, &pb.SetSpeedRequest{Speed: uint32(speed)})
+			if err != nil {
+				return err
+			}
+		}
+		_, err = client.SetRGBMode(ctx, &pb.SetRGBModeRequest{Mode: uint32(m)})
 		return err
 	},
 }
 
 func init() {
+	modeSetCmd.Flags().Uint8VarP(&speed, "speed", "s", 0, "Optional speed")
 	modeCmd.AddCommand(modeSetCmd)
 }

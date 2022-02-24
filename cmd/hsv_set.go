@@ -25,6 +25,12 @@ var hsvSetCmd = &cobra.Command{
 				return err
 			}
 		}
+		if speed > 0 {
+			_, err = client.SetSpeed(ctx, &pb.SetSpeedRequest{Speed: uint32(speed)})
+			if err != nil {
+				return err
+			}
+		}
 		_, err = client.SetMatrixHSV(ctx, &pb.SetMatrixHSVRequest{H: uint32(h), S: uint32(s), V: uint32(v)})
 		return err
 	},
@@ -32,5 +38,6 @@ var hsvSetCmd = &cobra.Command{
 
 func init() {
 	hsvSetCmd.Flags().Uint8VarP(&mode, "mode", "m", uint8(pb.RGBMode_RGB_MATRIX_INVALID), "Optional mode")
+	hsvSetCmd.Flags().Uint8VarP(&speed, "speed", "s", 0, "Optional speed")
 	hsvCmd.AddCommand(hsvSetCmd)
 }

@@ -8,8 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var speed uint8
-
 // speedSetCmd represents the speed set command
 var speedSetCmd = &cobra.Command{
 	Use:   "set",

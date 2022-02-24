@@ -6,6 +6,7 @@ import (
 )
 
 const KEY_MAX = 12
+const KEY_UPPER_MAX = 9
 
 var layerDesc = map[Layer]string{
 	Layer_LAYER_DEFAULT:     "DEFAULT      - Main (default) layer",
