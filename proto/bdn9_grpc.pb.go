@@ -21,7 +21,7 @@ type BDN9ServiceClient interface {
 	SetRGBMode(ctx context.Context, in *SetRGBModeRequest, opts ...grpc.CallOption) (*SetRGBModeReply, error)
 	SetMatrixHSV(ctx context.Context, in *SetMatrixHSVRequest, opts ...grpc.CallOption) (*SetMatrixHSVReply, error)
 	ToggleMatrix(ctx context.Context, in *ToggleMatrixRequest, opts ...grpc.CallOption) (*ToggleMatrixReply, error)
-	SetIndicatorHSV(ctx context.Context, in *SetIndicatorHSVRequest, opts ...grpc.CallOption) (*SetIndicatorHSVReply, error)
+	SetIndicatorRGB(ctx context.Context, in *SetIndicatorRGBRequest, opts ...grpc.CallOption) (*SetIndicatorRGBReply, error)
 	ToggleIndicator(ctx context.Context, in *ToggleIndicatorRequest, opts ...grpc.CallOption) (*ToggleIndicatorReply, error)
 	EnableIndicator(ctx context.Context, in *EnableIndicatorRequest, opts ...grpc.CallOption) (*EnableIndicatorReply, error)
 	DisableIndicator(ctx context.Context, in *DisableIndicatorRequest, opts ...grpc.CallOption) (*DisableIndicatorReply, error)
@@ -68,9 +68,9 @@ func (c *bDN9ServiceClient) ToggleMatrix(ctx context.Context, in *ToggleMatrixRe
 	return out, nil
 }
 
-func (c *bDN9ServiceClient) SetIndicatorHSV(ctx context.Context, in *SetIndicatorHSVRequest, opts ...grpc.CallOption) (*SetIndicatorHSVReply, error) {
-	out := new(SetIndicatorHSVReply)
-	err := c.cc.Invoke(ctx, "/BDN9Service/SetIndicatorHSV", in, out, opts...)
+func (c *bDN9ServiceClient) SetIndicatorRGB(ctx context.Context, in *SetIndicatorRGBRequest, opts ...grpc.CallOption) (*SetIndicatorRGBReply, error) {
+	out := new(SetIndicatorRGBReply)
+	err := c.cc.Invoke(ctx, "/BDN9Service/SetIndicatorRGB", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ type BDN9ServiceServer interface {
 	SetRGBMode(context.Context, *SetRGBModeRequest) (*SetRGBModeReply, error)
 	SetMatrixHSV(context.Context, *SetMatrixHSVRequest) (*SetMatrixHSVReply, error)
 	ToggleMatrix(context.Context, *ToggleMatrixRequest) (*ToggleMatrixReply, error)
-	SetIndicatorHSV(context.Context, *SetIndicatorHSVRequest) (*SetIndicatorHSVReply, error)
+	SetIndicatorRGB(context.Context, *SetIndicatorRGBRequest) (*SetIndicatorRGBReply, error)
 	ToggleIndicator(context.Context, *ToggleIndicatorRequest) (*ToggleIndicatorReply, error)
 	EnableIndicator(context.Context, *EnableIndicatorRequest) (*EnableIndicatorReply, error)
 	DisableIndicator(context.Context, *DisableIndicatorRequest) (*DisableIndicatorReply, error)
@@ -191,8 +191,8 @@ func (UnimplementedBDN9ServiceServer) SetMatrixHSV(context.Context, *SetMatrixHS
 func (UnimplementedBDN9ServiceServer) ToggleMatrix(context.Context, *ToggleMatrixRequest) (*ToggleMatrixReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ToggleMatrix not implemented")
 }
-func (UnimplementedBDN9ServiceServer) SetIndicatorHSV(context.Context, *SetIndicatorHSVRequest) (*SetIndicatorHSVReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetIndicatorHSV not implemented")
+func (UnimplementedBDN9ServiceServer) SetIndicatorRGB(context.Context, *SetIndicatorRGBRequest) (*SetIndicatorRGBReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetIndicatorRGB not implemented")
 }
 func (UnimplementedBDN9ServiceServer) ToggleIndicator(context.Context, *ToggleIndicatorRequest) (*ToggleIndicatorReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ToggleIndicator not implemented")
@@ -288,20 +288,20 @@ func _BDN9Service_ToggleMatrix_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BDN9Service_SetIndicatorHSV_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetIndicatorHSVRequest)
+func _BDN9Service_SetIndicatorRGB_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetIndicatorRGBRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BDN9ServiceServer).SetIndicatorHSV(ctx, in)
+		return srv.(BDN9ServiceServer).SetIndicatorRGB(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/BDN9Service/SetIndicatorHSV",
+		FullMethod: "/BDN9Service/SetIndicatorRGB",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BDN9ServiceServer).SetIndicatorHSV(ctx, req.(*SetIndicatorHSVRequest))
+		return srv.(BDN9ServiceServer).SetIndicatorRGB(ctx, req.(*SetIndicatorRGBRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -488,8 +488,8 @@ var BDN9Service_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _BDN9Service_ToggleMatrix_Handler,
 		},
 		{
-			MethodName: "SetIndicatorHSV",
-			Handler:    _BDN9Service_SetIndicatorHSV_Handler,
+			MethodName: "SetIndicatorRGB",
+			Handler:    _BDN9Service_SetIndicatorRGB_Handler,
 		},
 		{
 			MethodName: "ToggleIndicator",

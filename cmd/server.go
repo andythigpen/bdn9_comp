@@ -26,7 +26,7 @@ var serverCmd = &cobra.Command{
 		}
 		var opts []grpc.ServerOption
 		grpcServer := grpc.NewServer(opts...)
-		server := service.NewService(device)
+		server := service.NewService(keyboard)
 		pb.RegisterBDN9ServiceServer(grpcServer, server)
 		return grpcServer.Serve(lis)
 	},

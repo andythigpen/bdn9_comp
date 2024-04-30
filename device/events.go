@@ -1,4 +1,4 @@
-package serial
+package device
 
 import "errors"
 
@@ -25,5 +25,5 @@ func (ev Event) IsValid() error {
 }
 
 type EventHandler interface {
-	HandleEvent(d BDN9SerialDevice, ev Event)
+	HandleEvent(d BDN9Device, ev Event)
 }

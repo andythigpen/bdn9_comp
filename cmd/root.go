@@ -3,22 +3,23 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/signal"
 
 	"github.com/adrg/xdg"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
+	"github.com/andythigpen/bdn9_comp/v2/device"
 	pb "github.com/andythigpen/bdn9_comp/v2/proto"
-	"github.com/andythigpen/bdn9_comp/v2/serial"
 )
 
 var (
-	cfgFile string
-	device  serial.BDN9SerialDevice
-	conn    *grpc.ClientConn
-	client  pb.BDN9ServiceClient
-	persist bool
+	cfgFile  string
+	keyboard device.BDN9Device
+	conn     *grpc.ClientConn
+	client   pb.BDN9ServiceClient
+	persist  bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -38,8 +39,8 @@ func Execute() {
 		os.Exit(1)
 	}
 
-	if device != nil && device.IsOpen() {
-		device.Close()
+	if keyboard != nil && keyboard.IsOpen() {
+		keyboard.Close()
 	}
 	if conn != nil {
 		conn.Close()
@@ -84,7 +85,7 @@ func InitConfig() {
 	viper.SetDefault("bind", "localhost:17432")
 	viper.SetDefault("slackWindowName", "slack")
 	viper.SetDefault("slackWindowTitle", "slack")
-	viper.SetDefault("slackMuteKeys", []string{"m"})
+	viper.SetDefault("slackMuteKeys", []string{"space", "lcmd", "lshift"})
 	viper.SetDefault("teamsWindowName", "teams")
 	viper.SetDefault("teamsWindowTitle", "microsoft teams")
 	viper.SetDefault("teamsMuteKeys", []string{"m", "lcmd", "lshift"})
@@ -95,7 +96,7 @@ func OpenDevice() {
 	if len(server) != 0 {
 		openGrpc()
 	} else {
-		if _, err := OpenSerialDevice(nil); err != nil {
+		if _, err := OpenUSBDevice(nil); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -112,24 +113,27 @@ func openGrpc() {
 	client = pb.NewBDN9ServiceClient(conn)
 }
 
-func OpenSerialDevice(handler serial.EventHandler) (serial.BDN9SerialDevice, error) {
-	var err error
-	port := viper.GetString("port")
-	if len(port) == 0 {
-		port, err = serial.FindPort()
-		if err != nil {
-			return nil, err
-		}
-	}
-	device = serial.NewDevice(handler)
-	if err := device.Open(port); err != nil {
+func OpenUSBDevice(handler device.EventHandler) (device.BDN9Device, error) {
+	keyboard = device.NewDevice(handler)
+	if err := keyboard.Open(); err != nil {
 		return nil, err
 	}
 
 	if persist {
-		device.EnablePersist()
+		keyboard.EnablePersist()
 	}
 
-	client = serial.NewSerialClient(device)
-	return device, nil
+	client = device.NewDeviceClient(keyboard)
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		<-c
+		if err := keyboard.Close(); err != nil {
+			fmt.Printf("failed to close keyboard connection: %s", err)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}()
+	return keyboard, nil
 }

@@ -25,6 +25,10 @@ func parseHSV(args []string) (h, s, v uint64, err error) {
 	return
 }
 
+func parseRGB(args []string) (r, g, b uint64, err error) {
+	return parseHSV(args)
+}
+
 func init() {
 	rootCmd.AddCommand(hsvCmd)
 }

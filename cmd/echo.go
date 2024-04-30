@@ -10,7 +10,7 @@ import (
 // echoCmd represents the reset command
 var echoCmd = &cobra.Command{
 	Use:   "echo",
-	Short: "Tests the keyboard serial connection",
+	Short: "Tests the keyboard connection",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := client.Echo(context.Background(), &pb.EchoRequest{})
 		return err

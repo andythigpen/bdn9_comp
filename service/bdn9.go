@@ -3,16 +3,16 @@ package service
 import (
 	"context"
 
+	"github.com/andythigpen/bdn9_comp/v2/device"
 	pb "github.com/andythigpen/bdn9_comp/v2/proto"
-	"github.com/andythigpen/bdn9_comp/v2/serial"
 )
 
 type bdn9Service struct {
 	pb.UnimplementedBDN9ServiceServer
-	device serial.BDN9SerialDevice
+	device device.BDN9Device
 }
 
-func NewService(device serial.BDN9SerialDevice) pb.BDN9ServiceServer {
+func NewService(device device.BDN9Device) pb.BDN9ServiceServer {
 	return &bdn9Service{
 		UnimplementedBDN9ServiceServer: pb.UnimplementedBDN9ServiceServer{},
 		device:                         device,
@@ -40,11 +40,11 @@ func (s *bdn9Service) ToggleMatrix(ctx context.Context, request *pb.ToggleMatrix
 	return &pb.ToggleMatrixReply{}, nil
 }
 
-func (s *bdn9Service) SetIndicatorHSV(ctx context.Context, request *pb.SetIndicatorHSVRequest) (*pb.SetIndicatorHSVReply, error) {
-	if err := s.device.SetIndicatorHSV(pb.Layer(request.Layer), uint8(request.Key), uint8(request.H), uint8(request.S), uint8(request.V)); err != nil {
+func (s *bdn9Service) SetIndicatorRGB(ctx context.Context, request *pb.SetIndicatorRGBRequest) (*pb.SetIndicatorRGBReply, error) {
+	if err := s.device.SetIndicatorRGB(pb.Layer(request.Layer), uint8(request.Key), uint8(request.R), uint8(request.G), uint8(request.B)); err != nil {
 		return nil, err
 	}
-	return &pb.SetIndicatorHSVReply{}, nil
+	return &pb.SetIndicatorRGBReply{}, nil
 }
 
 func (s *bdn9Service) ToggleIndicator(ctx context.Context, request *pb.ToggleIndicatorRequest) (*pb.ToggleIndicatorReply, error) {

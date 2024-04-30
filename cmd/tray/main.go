@@ -9,8 +9,8 @@ import (
 
 	"github.com/andythigpen/bdn9_comp/v2/cmd"
 	"github.com/andythigpen/bdn9_comp/v2/cmd/tray/icon"
+	device1 "github.com/andythigpen/bdn9_comp/v2/device"
 	pb "github.com/andythigpen/bdn9_comp/v2/proto"
-	"github.com/andythigpen/bdn9_comp/v2/serial"
 	"github.com/andythigpen/bdn9_comp/v2/service"
 	"github.com/getlantern/systray"
 	"github.com/go-vgo/robotgo"
@@ -19,16 +19,16 @@ import (
 )
 
 var listening = false
-var device serial.BDN9SerialDevice
+var device device1.BDN9Device
 var grpcServer *grpc.Server
 var server pb.BDN9ServiceServer
 var listener net.Listener
-var handler serialHandler
+var handler eventHandler
 var muted = false
 var slackPid int32 = 0
 var teamsPid int32 = 0
 
-type serialHandler struct{}
+type eventHandler struct{}
 
 func findPid(windowName string, windowTitle string) (int32, error) {
 	pids, err := robotgo.FindIds(windowName)
@@ -83,7 +83,7 @@ func sendMuteKeys(pid int32, windowName string, windowTitle string, muteKeys []s
 	return nil
 }
 
-func (h serialHandler) HandleEvent(d serial.BDN9SerialDevice, ev serial.Event) {
+func (h eventHandler) HandleEvent(d device1.BDN9Device, ev device1.Event) {
 	var err error
 	slackWindowName := viper.GetString("slackWindowName")
 	slackWindowTitle := viper.GetString("slackWindowTitle")
@@ -92,26 +92,26 @@ func (h serialHandler) HandleEvent(d serial.BDN9SerialDevice, ev serial.Event) {
 
 	fmt.Printf("ev: %v\n", ev)
 	switch ev {
-	case serial.EVENT_FOCUS_SLACK:
+	case device1.EVENT_FOCUS_SLACK:
 		err = focusWindow(slackWindowName, slackWindowTitle)
 		if err != nil {
 			fmt.Printf("No program found: %s", err)
 			return
 		}
-	case serial.EVENT_FOCUS_TEAMS:
+	case device1.EVENT_FOCUS_TEAMS:
 		err = focusWindow(teamsWindowName, teamsWindowTitle)
 		if err != nil {
 			fmt.Printf("No program found: %s", err)
 			return
 		}
-	case serial.EVENT_MUTE_SLACK:
+	case device1.EVENT_MUTE_SLACK:
 		slackMuteKeys := viper.GetStringSlice("slackMuteKeys")
 		err = sendMuteKeys(slackPid, slackWindowName, slackWindowTitle, slackMuteKeys)
 		if err != nil {
 			fmt.Printf("No program found: %s", err)
 			return
 		}
-	case serial.EVENT_MUTE_TEAMS:
+	case device1.EVENT_MUTE_TEAMS:
 		teamsWindowName := viper.GetString("teamsWindowName")
 		teamsMuteKeys := viper.GetStringSlice("teamsMuteKeys")
 		err := sendMuteKeys(teamsPid, teamsWindowName, teamsWindowTitle, teamsMuteKeys)
@@ -119,7 +119,7 @@ func (h serialHandler) HandleEvent(d serial.BDN9SerialDevice, ev serial.Event) {
 			fmt.Printf("No program found: %s", err)
 			return
 		}
-	case serial.EVENT_START_SLACK:
+	case device1.EVENT_START_SLACK:
 		slackPid, err = findPid(slackWindowName, slackWindowTitle)
 		if err != nil {
 			fmt.Printf("%s\n", err)
@@ -132,7 +132,7 @@ func (h serialHandler) HandleEvent(d serial.BDN9SerialDevice, ev serial.Event) {
 				}
 			}()
 		}
-	case serial.EVENT_START_TEAMS:
+	case device1.EVENT_START_TEAMS:
 		teamsPid, err = findPid(teamsWindowName, teamsWindowTitle)
 		if err != nil {
 			fmt.Printf("%s\n", err)
@@ -145,7 +145,7 @@ func (h serialHandler) HandleEvent(d serial.BDN9SerialDevice, ev serial.Event) {
 				}
 			}()
 		}
-	case serial.EVENT_END_CALL:
+	case device1.EVENT_END_CALL:
 		slackPid = 0
 		teamsPid = 0
 	}
@@ -161,12 +161,12 @@ func main() {
 	systray.Run(onReady, onExit)
 }
 
-func connectSerialDevice() error {
+func connectUSBDevice() error {
 	var err error
-	handler = serialHandler{}
-	device, err = cmd.OpenSerialDevice(handler)
+	handler = eventHandler{}
+	device, err = cmd.OpenUSBDevice(handler)
 	if err != nil {
-		return fmt.Errorf("Failed to open serial device: %s", err)
+		return fmt.Errorf("Failed to open device: %s", err)
 	}
 	return nil
 }
@@ -182,15 +182,13 @@ func onReady() {
 	mFocusTeams := systray.AddMenuItem("Focus Teams", "Focus Teams")
 	mLayers := systray.AddMenuItem("Layers", "Layers")
 	mDefaultLayer := mLayers.AddSubMenuItem("Default", "Default")
-	mProgrammingLayer := mLayers.AddSubMenuItem("Programming", "Programming")
-	mDebuggingLayer := mLayers.AddSubMenuItem("Debugging", "Debugging")
 	mCalls := systray.AddMenuItem("Calls", "Calls")
 	mStartSlack := mCalls.AddSubMenuItem("Start Slack Call", "Start Slack Call")
 	mStartTeams := mCalls.AddSubMenuItem("Start Teams Call", "Start Teams Call")
 	mMuteToggle := mCalls.AddSubMenuItem("Toggle Mute", "Toggle Mute")
 	mEndCall := mCalls.AddSubMenuItem("End Call", "End a call in progress")
 	systray.AddSeparator()
-	mSerial := systray.AddMenuItem("Serial: initializing", "initializing")
+	mUSB := systray.AddMenuItem("USB: initializing", "initializing")
 	mServer := systray.AddMenuItem("Server: initializing", "initializing")
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the app")
 
@@ -224,7 +222,7 @@ func onReady() {
 		}
 	}
 
-	initSerial := func() {
+	initUSB := func() {
 		mClearIndicators.Disable()
 		mStartSlack.Disable()
 		mStartSlack.Disable()
@@ -233,11 +231,11 @@ func onReady() {
 		if device != nil && device.IsOpen() {
 			device.Close()
 		}
-		if err := connectSerialDevice(); err != nil {
-			mSerial.SetTitle(fmt.Sprintf("Error: %s", err))
+		if err := connectUSBDevice(); err != nil {
+			mUSB.SetTitle(fmt.Sprintf("Error: %s", err))
 		} else {
-			mSerial.SetTitle(fmt.Sprintf("Serial: connected to %s", device.Name()))
-			mSerial.SetTooltip("connected")
+			mUSB.SetTitle("USB: connected")
+			mUSB.SetTooltip("connected")
 			initServer()
 		}
 	}
@@ -281,22 +279,6 @@ func onReady() {
 				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
 					Layer: pb.Layer_LAYER_DEFAULT,
 				})
-			case <-mProgrammingLayer.ClickedCh:
-				if server == nil {
-					continue
-				}
-				ctx := context.Background()
-				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
-					Layer: pb.Layer_LAYER_PROGRAMMING,
-				})
-			case <-mDebuggingLayer.ClickedCh:
-				if server == nil {
-					continue
-				}
-				ctx := context.Background()
-				server.ActivateLayer(ctx, &pb.ActivateLayerRequest{
-					Layer: pb.Layer_LAYER_DEBUGGING,
-				})
 			case <-mStartSlack.ClickedCh:
 				if server == nil {
 					continue
@@ -330,13 +312,13 @@ func onReady() {
 				}
 				ctx := context.Background()
 				server.EndCall(ctx, &pb.EndCallRequest{})
-			case <-mSerial.ClickedCh:
-				initSerial()
+			case <-mUSB.ClickedCh:
+				initUSB()
 			case <-mServer.ClickedCh:
 				initServer()
 			}
 		}
 	}()
 
-	go initSerial()
+	go initUSB()
 }

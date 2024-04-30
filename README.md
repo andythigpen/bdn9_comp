@@ -2,7 +2,6 @@
 # Configuration
 
 * server (string) - Hostname/port to connect to. If set, bdn9 will act like a client and send requests to this server.
-* port (string) - Serial port of the BDN9 device. This can be used if auto-detecting the device fails.
 * bind (string) - IP address/port to bind to and listen for incoming requests. Defaults to "localhost:17432".
 * slackWindowName (string) - Name of the slack call window process. Used for mute toggle.
 * slackMuteKeys (string) - List of keys to send to slack on toggle mute events. The first entry must be a key and the remaining can be modifier keys.

@@ -4,11 +4,9 @@ option go_package = "github.com/andythigpen/bdn9_comp/v2/proto";
 
 enum Layer {
 	LAYER_DEFAULT = 0;
-	LAYER_PROGRAMMING = 1;
-	LAYER_DEBUGGING = 2;
-	LAYER_SLACK = 3;
-	LAYER_TEAMS = 4;
-	LAYER_MAX = 5; // not a valid layer
+	LAYER_TEAMS = 1;
+	LAYER_SLACK = 2;
+	LAYER_MAX = 3; // not a valid layer
 }
 
 enum RGBMode {
@@ -58,7 +56,7 @@ service BDN9Service {
   rpc SetRGBMode(SetRGBModeRequest) returns (SetRGBModeReply) {}
   rpc SetMatrixHSV(SetMatrixHSVRequest) returns (SetMatrixHSVReply) {}
   rpc ToggleMatrix(ToggleMatrixRequest) returns (ToggleMatrixReply) {}
-  rpc SetIndicatorHSV(SetIndicatorHSVRequest) returns (SetIndicatorHSVReply) {}
+  rpc SetIndicatorRGB(SetIndicatorRGBRequest) returns (SetIndicatorRGBReply) {}
   rpc ToggleIndicator(ToggleIndicatorRequest) returns (ToggleIndicatorReply) {}
   rpc EnableIndicator(EnableIndicatorRequest) returns (EnableIndicatorReply) {}
   rpc DisableIndicator(DisableIndicatorRequest) returns (DisableIndicatorReply) {}
@@ -86,15 +84,15 @@ message ToggleMatrixRequest {
     bool persist = 1;
 }
 message ToggleMatrixReply {}
-message SetIndicatorHSVRequest {
-    uint32 h = 1;
-    uint32 s = 2;
-    uint32 v = 3;
+message SetIndicatorRGBRequest {
+    uint32 r = 1;
+    uint32 g = 2;
+    uint32 b = 3;
     uint32 key = 4;
     bool persist = 5;
     Layer layer = 6;
 }
-message SetIndicatorHSVReply {}
+message SetIndicatorRGBReply {}
 message ToggleIndicatorRequest {
     uint32 key = 1;
     Layer layer = 2;
