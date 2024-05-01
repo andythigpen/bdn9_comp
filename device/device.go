@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/karalabe/hid"
+	hid "github.com/sstallion/go-hid"
 
 	pb "github.com/andythigpen/bdn9_comp/v2/proto"
 )
@@ -84,13 +84,24 @@ func handleEvents(d *bdn9Device) {
 }
 
 func (d *bdn9Device) Open() (err error) {
-	deviceInfos := hid.Enumerate(VID, PID)
-	if len(deviceInfos) < 2 {
+	var path string
+	hid.Enumerate(VID, PID, func(info *hid.DeviceInfo) error {
+		if info.Usage == 0x61 {
+			path = info.Path
+		}
+		return nil
+	})
+	if len(path) == 0 {
 		return DeviceNotFound
 	}
-	d.device, err = deviceInfos[1].Open()
+
+	if err := hid.Init(); err != nil {
+		return err
+	}
+
+	d.device, err = hid.OpenPath(path)
 	if err != nil {
-		return
+		return err
 	}
 
 	if d.handler != nil {
